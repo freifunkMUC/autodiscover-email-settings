@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node:23.9.0-alpine
 
 EXPOSE 8000
 
