@@ -1,5 +1,3 @@
-version: '2.4'
-
 services:
   autodiscover:
     # For production, download prebuilt image

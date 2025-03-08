@@ -1,164 +1,169 @@
 "use strict";
 
-const path		= require("path");
-const app		= require("koa")();
-const swig		= require("koa-swig");
-const body		= require("koa-buddy");
-const router	= require("koa-router")();
-const settings	= require("./settings.js");
+const path = require("path");
+const Koa = require("koa");
+const views = require("koa-views");
+const bodyParser = require("koa-bodyparser");
+const Router = require("koa-router");
+const serve = require("koa-static"); // Middleware für statische Dateien
+const settings = require("./settings.js");
 
+const app = new Koa();
+const router = new Router();
+
+// Konfiguriere koa-views für .xml und .html Dateien
+app.use(views(path.join(__dirname, "views"), {
+  map: {
+    xml: "nunjucks", // .xml Dateien mit nunjucks rendern
+    html: "nunjucks", // .html Dateien mit nunjucks rendern
+  },
+  extension: "xml", // Standard-Dateiendung
+  options: {
+    autoescape: true,
+    noCache: process.env.NODE_ENV === "development",
+    locals: settings,
+  },
+}));
+
+// Middleware für statische Dateien (z. B. favicon.ico)
+app.use(serve(path.join(__dirname, "public")));
+
+// Helper function to find a child node by name
 function findChild(name, children, def = null) {
-	for (let child of children) {
-		if (child.name === name) {
-			return child;
-		}
-	}
-	return def;
+  for (let child of children) {
+    if (child.name === name) {
+      return child;
+    }
+  }
+  return def;
 }
 
 // Microsoft Outlook / Apple Mail
-function *autodiscover() {
-	this.set("Content-Type", "application/xml");
+router.get("/autodiscover/autodiscover.xml", async (ctx) => {
+  ctx.set("Content-Type", "application/xml");
 
-	const request	= this.request.body && this.request.body.root ? 
-		findChild("Request", this.request.body.root.children) : 
-		null;
-	const schema	= request !== null ? 
-		findChild("AcceptableResponseSchema", request.children) : 
-		null;
-	const xmlns		= schema !== null ? 
-		schema.content : 
-		"http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
+  const request = ctx.request.body && ctx.request.body.root ?
+    findChild("Request", ctx.request.body.root.children) :
+    null;
+  const schema = request !== null ?
+    findChild("AcceptableResponseSchema", request.children) :
+    null;
+  const xmlns = schema !== null ?
+    schema.content :
+    "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
 
-	let email		= request !== null ? 
-		findChild("EMailAddress", request.children) : 
-		null;
+  let email = request !== null ?
+    findChild("EMailAddress", request.children) :
+    null;
 
-	let username;
-	let domain;
-	if ( email === null || email.content === null ) {
-		email		= "";
-		username	= "";
-		domain		= settings.domain;
-	} else if ( ~email.content.indexOf("@") ) {
-		email		= email.content;
-		username	= email.split("@")[0];
-		domain		= email.split("@")[1];
-	} else {
-		username	= email.content;
-		domain		= settings.domain;
-		email		= username + "@" + domain;
-	}
+  let username;
+  let domain;
+  if (email === null || email.content === null) {
+    email = "";
+    username = "";
+    domain = settings.domain;
+  } else if (email.content.includes("@")) {
+    email = email.content;
+    username = email.split("@")[0];
+    domain = email.split("@")[1];
+  } else {
+    username = email.content;
+    domain = settings.domain;
+    email = username + "@" + domain;
+  }
 
-	const imapenc	= settings.imap.socket === "STARTTLS" ? "TLS" : settings.imap.socket;
-	const popenc	= settings.pop.socket === "STARTTLS" ? "TLS" : settings.pop.socket;
-	const smtpenc	= settings.smtp.socket === "STARTTLS" ? "TLS" : settings.smtp.socket;
+  const imapenc = settings.imap.socket === "STARTTLS" ? "TLS" : settings.imap.socket;
+  const popenc = settings.pop.socket === "STARTTLS" ? "TLS" : settings.pop.socket;
+  const smtpenc = settings.smtp.socket === "STARTTLS" ? "TLS" : settings.smtp.socket;
 
-	const imapssl	= settings.imap.socket === "SSL" ? "on" : "off";
-	const popssl	= settings.pop.socket === "SSL" ? "on" : "off";
-	const smtpssl	= settings.smtp.socket === "SSL" ? "on" : "off";
+  const imapssl = settings.imap.socket === "SSL" ? "on" : "off";
+  const popssl = settings.pop.socket === "SSL" ? "on" : "off";
+  const smtpssl = settings.smtp.socket === "SSL" ? "on" : "off";
 
-	yield this.render("autodiscover", {
-		schema: xmlns,
-		email,
-		username,
-		domain,
-		imapenc,
-		popenc,
-		smtpenc,
-		imapssl,
-		popssl,
-		smtpssl
-	});
-}
-
-router.get("/autodiscover/autodiscover.xml", autodiscover);
-router.post("/autodiscover/autodiscover.xml", autodiscover);
-router.get("/Autodiscover/Autodiscover.xml", autodiscover);
-router.post("/Autodiscover/Autodiscover.xml", autodiscover);
-
+  await ctx.render("autodiscover", {
+    schema: xmlns,
+    email,
+    username,
+    domain,
+    imapenc,
+    popenc,
+    smtpenc,
+    imapssl,
+    popssl,
+    smtpssl,
+  });
+});
 
 // Thunderbird
-router.get("/mail/config-v1.1.xml", function *autoconfig() {
-	this.set("Content-Type", "application/xml");
-	yield this.render("autoconfig");
+router.get("/mail/config-v1.1.xml", async (ctx) => {
+  ctx.set("Content-Type", "application/xml");
+  await ctx.render("autoconfig");
 });
 
+// iOS / Apple Mail
+router.get("/email.mobileconfig", async (ctx) => {
+  let email = ctx.request.query.email;
 
-// iOS / Apple Mail (/email.mobileconfig?email=username@domain.com or /email.mobileconfig?email=username)
-router.get("/email.mobileconfig", function *autoconfig() {
-	let email = this.request.query.email;
+  if (!email) {
+    ctx.status = 400;
+    return;
+  }
 
-	if (!email) {
-		this.status = 400;
+  let username;
+  let domain;
+  if (email.includes("@")) {
+    username = email.split("@")[0];
+    domain = email.split("@")[1];
+  } else {
+    username = email;
+    domain = settings.domain;
+    email = username + "@" + domain;
+  }
 
-		return;
-	}
+  const filename = `${domain}.mobileconfig`;
 
-	let username;
-	let domain;
-	if ( ~email.indexOf("@") ) {
-		username	= email.split("@")[0];
-		domain		= email.split("@")[1];
-	} else {
-		username	= email;
-		domain		= settings.domain;
-		email		= username + "@" + domain;
-	}
+  const imapssl = settings.imap.socket === "SSL" || settings.imap.socket === "STARTTLS" ? "true" : "false";
+  const popssl = settings.pop.socket === "SSL" || settings.pop.socket === "STARTTLS" ? "true" : "false";
+  const smtpssl = settings.smtp.socket === "SSL" || settings.smtp.socket === "STARTTLS" ? "true" : "false";
+  const ldapssl = settings.ldap.socket === "SSL" || settings.ldap.port === "636" ? "true" : "false";
 
-	const filename	= `${domain}.mobileconfig`;
+  ctx.set("Content-Type", "application/x-apple-aspen-config; charset=utf-8");
+  ctx.set("Content-Disposition", `attachment; filename="${filename}"`);
 
-	const imapssl	= settings.imap.socket === "SSL" || settings.imap.socket === "STARTTLS" ? "true" : "false";
-	const popssl	= settings.pop.socket === "SSL" || settings.pop.socket === "STARTTLS" ? "true" : "false";
-	const smtpssl	= settings.smtp.socket === "SSL" || settings.smtp.socket === "STARTTLS" ? "true" : "false";
-	const ldapssl	= settings.ldap.socket === "SSL" || settings.ldap.port === "636" ? "true" : "false";
-
-	this.set("Content-Type", "application/x-apple-aspen-config; charset=utf-8");
-	this.set("Content-Disposition", `attachment; filename="${filename}"`);
-
-	yield this.render("mobileconfig", {
-		email,
-		username,
-		domain,
-		imapssl,
-		popssl,
-		smtpssl,
-		ldapssl
-	});
+  await ctx.render("mobileconfig", {
+    email,
+    username,
+    domain,
+    imapssl,
+    popssl,
+    smtpssl,
+    ldapssl,
+  });
 });
-
 
 // Generic support page
-router.get("/", function *index() {
-	yield this.render("index.html");
+router.get("/", async (ctx) => {
+  await ctx.render("index.html"); // Rendert index.html mit nunjucks
 });
 
-router.get("/favicon.ico", function *icon() {
-	yield this.render("favicon.ico");
+// Middleware to fix content type
+app.use(async (ctx, next) => {
+  let type = ctx.request.headers["content-type"];
+
+  if (type && type.indexOf("text/xml") === 0) {
+    let newType = type.replace("text/xml", "application/xml");
+    ctx.request.headers["content-type"] = newType;
+  }
+
+  await next();
 });
 
-app.context.render = swig({
-	root: path.join(__dirname, "views"),
-	autoescape: true,
-	cache: "memory",
-	ext: "xml",
-	locals: settings
-});
-
-app.use(function *fixContentType(next) {
-	let type = this.request.headers["content-type"];
-
-	if (type && type.indexOf("text/xml") === 0) {
-		let newType = type.replace("text/xml", "application/xml");
-
-		this.request.headers["content-type"] = newType;
-	}
-
-	yield next;
-});
-
-app.use(body());
+// Middleware
+app.use(bodyParser());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.listen(process.env.PORT || 8000);
+// Start the server
+app.listen(process.env.PORT || 8000, () => {
+  console.log(`Server is running on port ${process.env.PORT || 8000}`);
+});
