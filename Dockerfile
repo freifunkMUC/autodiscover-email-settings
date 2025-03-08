@@ -1,4 +1,4 @@
-FROM node:23.9.0-alpine
+FROM node:23.9.0-slim
 
 EXPOSE 8000
 
