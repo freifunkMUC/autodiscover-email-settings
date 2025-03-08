@@ -17,7 +17,7 @@ app.use(views(path.join(__dirname, "views"), {
     xml: "nunjucks", // .xml Dateien mit nunjucks rendern
     html: "nunjucks", // .html Dateien mit nunjucks rendern
   },
-  extension: "xml", // Standard-Dateiendung
+  extension: "html", // Standard-Dateiendung
   options: {
     autoescape: true,
     noCache: process.env.NODE_ENV === "development",
@@ -143,7 +143,19 @@ router.get("/email.mobileconfig", async (ctx) => {
 
 // Generic support page
 router.get("/", async (ctx) => {
-  await ctx.render("index.html"); // Rendert index.html mit nunjucks
+  await ctx.render("index.html", {
+    info: {
+      name: "Your Company Name", // Beispielwert
+    },
+    domain: settings.domain, // Domain aus settings.js
+    imap: settings.imap, // IMAP-Einstellungen aus settings.js
+    pop: settings.pop, // POP-Einstellungen aus settings.js
+    smtp: settings.smtp, // SMTP-Einstellungen aus settings.js
+    ldap: settings.ldap, // LDAP-Einstellungen aus settings.js
+    mobile: {
+      identifier: true, // Beispielwert, falls mobileconfig aktiviert ist
+    },
+  });
 });
 
 // Middleware to fix content type
