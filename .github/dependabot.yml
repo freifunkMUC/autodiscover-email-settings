@@ -6,17 +6,11 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule: {interval: monthly}
-    reviewers: [freifunkMUC/wg-access]
-    assignees: [freifunkMUC/wg-access]
 
   - package-ecosystem: docker
     directory: /
     schedule: {interval: monthly}
-    reviewers: [freifunkMUC/wg-access]
-    assignees: [freifunkMUC/wg-access]
     
   - package-ecosystem: npm
     directory: /website
     schedule: {interval: monthly}
-    reviewers: [freifunkMUC/wg-access]
-    assignees: [freifunkMUC/wg-access]
