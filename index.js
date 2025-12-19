@@ -74,7 +74,7 @@ async function autodiscover(ctx) {
 	const popssl = settings.pop.socket === "SSL" ? "on" : "off";
 	const smtpssl = settings.smtp.socket === "SSL" ? "on" : "off";
 
-	await ctx.render('autodiscover.xml', {
+	await ctx.render('autodiscover.xml', Object.assign({}, settings, {
 		schema: ctx.state._xmlns || "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006",
 		email,
 		username,
@@ -85,7 +85,7 @@ async function autodiscover(ctx) {
 		imapssl,
 		popssl,
 		smtpssl
-	});
+	}));
 }
 
 router.get("/autodiscover/autodiscover.xml", autodiscover);
@@ -97,7 +97,7 @@ router.post("/Autodiscover/Autodiscover.xml", autodiscover);
 // Thunderbird
 router.get("/mail/config-v1.1.xml", async (ctx) => {
 	ctx.set("Content-Type", "application/xml");
-	await ctx.render('autoconfig.xml');
+	await ctx.render('autoconfig.xml', settings);
 });
 
 
@@ -131,7 +131,7 @@ router.get("/email.mobileconfig", async (ctx) => {
 	ctx.set("Content-Type", "application/x-apple-aspen-config; charset=utf-8");
 	ctx.set("Content-Disposition", `attachment; filename="${filename}"`);
 
-	await ctx.render('mobileconfig.xml', {
+	await ctx.render('mobileconfig.xml', Object.assign({}, settings, {
 		email,
 		username,
 		domain,
@@ -139,13 +139,13 @@ router.get("/email.mobileconfig", async (ctx) => {
 		popssl,
 		smtpssl,
 		ldapssl
-	});
+	}));
 });
 
 
 // Generic support page
 router.get("/", async (ctx) => {
-	await ctx.render('index.html');
+	await ctx.render('index.html', settings);
 });
 
 router.get("/favicon.ico", async (ctx) => {
