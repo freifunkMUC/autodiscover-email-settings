@@ -9,6 +9,7 @@ const bodyParser = require("koa-bodyparser");
 const Router = require("@koa/router");
 const router = new Router();
 const settings = require("./settings.js");
+const send = require('koa-send');
 
 function findChild(name, children, def = null) {
 	for (let child of children) {
@@ -148,11 +149,13 @@ router.get("/", async (ctx) => {
 });
 
 router.get("/favicon.ico", async (ctx) => {
-	await ctx.render('favicon.ico');
+	// Serve static favicon from views directory
+	ctx.type = 'image/x-icon';
+	await send(ctx, 'favicon.ico', { root: path.join(__dirname, 'views') });
 });
 
 app.use(views(path.join(__dirname, 'views'), {
-	map: { xml: 'nunjucks' }
+	map: { xml: 'nunjucks', html: 'nunjucks' }
 }));
 
 app.use(async (ctx, next) => {
