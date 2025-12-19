@@ -105,7 +105,12 @@ router.get("/mail/config-v1.1.xml", async (ctx) => {
 router.get("/email.mobileconfig", async (ctx) => {
 	let email = ctx.request.query.email;
 
-	if (!email) {
+	// Ensure email is a single string value, not an array, to avoid type confusion issues
+	if (Array.isArray(email)) {
+		email = email[0] || "";
+	}
+
+	if (!email || typeof email !== "string") {
 		ctx.status = 400;
 		return;
 	}
