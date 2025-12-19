@@ -1,16 +1,21 @@
 FROM node:lts-alpine
 
+ENV NODE_ENV=production
+
 EXPOSE 8000
 
 WORKDIR /app
-COPY package.json yarn.lock index.js settings.js /app/
 
+# Install production dependencies using the frozen lockfile for reproducible builds
+COPY package.json yarn.lock ./
 RUN set -ex; \
     node --version; \
     yarn --version; \
-    yarn --prod; \
+    yarn install --production --frozen-lockfile --non-interactive; \
     yarn cache clean
 
-COPY views /app/views
+# Copy application files
+COPY index.js settings.js ./
+COPY views ./views
 
-CMD ["node", "/app/index"]
+CMD ["node", "index.js"]
