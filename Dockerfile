@@ -18,4 +18,9 @@ RUN set -ex; \
 COPY index.js settings.js ./
 COPY views ./views
 
+# Ensure the application directory is owned by an unprivileged user and run as that user
+RUN chown -R 1000:1000 /app
+
+USER 1000
+
 CMD ["node", "index.js"]
