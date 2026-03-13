@@ -28,8 +28,6 @@ function extractEmailFromXml(raw) {
 
 // Microsoft Outlook / Apple Mail
 async function autodiscover(ctx) {
-	ctx.set("Content-Type", "application/xml");
-
 	// Try to use parsed body if available, otherwise fallback to raw XML extraction
 	let email = null;
 	if (ctx.request.body && typeof ctx.request.body === 'object') {
@@ -86,6 +84,7 @@ async function autodiscover(ctx) {
 		popssl,
 		smtpssl
 	}));
+	ctx.type = "application/xml";
 }
 
 router.get("/autodiscover/autodiscover.xml", autodiscover);
@@ -96,8 +95,8 @@ router.post("/Autodiscover/Autodiscover.xml", autodiscover);
 
 // Thunderbird
 router.get("/mail/config-v1.1.xml", async (ctx) => {
-	ctx.set("Content-Type", "application/xml");
 	await ctx.render('autoconfig.xml', settings);
+	ctx.type = "application/xml";
 });
 
 
@@ -145,6 +144,7 @@ router.get("/email.mobileconfig", async (ctx) => {
 		smtpssl,
 		ldapssl
 	}));
+	ctx.type = "application/x-apple-aspen-config";
 });
 
 
