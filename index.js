@@ -1,6 +1,7 @@
 "use strict";
 
 const path = require("path");
+const crypto = require("crypto");
 const Koa = require("koa");
 const app = new Koa();
 const views = require("@ladjs/koa-views");
@@ -31,6 +32,13 @@ function log(level, event, details = {}) {
 	} else {
 		console.log(output);
 	}
+}
+
+function buildRequestId() {
+	if (typeof crypto.randomUUID === 'function') {
+		return crypto.randomUUID();
+	}
+	return crypto.randomBytes(16).toString('hex');
 }
 
 function findChild(name, children, def = null) {
@@ -186,6 +194,14 @@ app.use(views(path.join(__dirname, 'views'), {
 }));
 
 app.use(async (ctx, next) => {
+	const incomingRequestId = ctx.get('x-request-id');
+	const requestId = incomingRequestId || buildRequestId();
+	ctx.state.requestId = requestId;
+	ctx.set('X-Request-Id', requestId);
+	await next();
+});
+
+app.use(async (ctx, next) => {
 	try {
 		await next();
 	} catch (err) {
@@ -195,6 +211,7 @@ app.use(async (ctx, next) => {
 		}
 
 		log('error', 'request_error', {
+			requestId: ctx.state.requestId,
 			method: ctx.method,
 			path: ctx.path,
 			status: ctx.status,
@@ -210,6 +227,7 @@ app.use(async (ctx, next) => {
 	await next();
 
 	log('info', 'request', {
+		requestId: ctx.state.requestId,
 		method: ctx.method,
 		path: ctx.path,
 		status: ctx.status,
@@ -244,6 +262,9 @@ app.listen(port);
 
 log('info', 'server_started', { port });
 
-app.on('error', (err) => {
-	log('error', 'app_error', { message: err.message });
+app.on('error', (err, ctx) => {
+	log('error', 'app_error', {
+		requestId: ctx && ctx.state ? ctx.state.requestId : undefined,
+		message: err.message
+	});
 });

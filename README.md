@@ -53,6 +53,8 @@ The service emits JSON logs to stdout/stderr by default:
 - per-request access logs (`request`)
 - unhandled request errors (`request_error`/`app_error`)
 
+Each request log includes a `requestId` field. If a client sends `X-Request-Id`, it is reused; otherwise one is generated and returned in the response header.
+
 Control logging verbosity with `LOG_LEVEL`:
 - `info` (default): startup + request + error logs
 - `silent` or `none`: disable all application logs
