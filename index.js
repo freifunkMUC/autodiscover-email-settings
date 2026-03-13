@@ -11,6 +11,28 @@ const router = new Router();
 const settings = require("./settings.js");
 const send = require('koa-send');
 
+const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLowerCase();
+const LOG_ENABLED = LOG_LEVEL !== 'silent' && LOG_LEVEL !== 'none';
+
+function log(level, event, details = {}) {
+	if (!LOG_ENABLED) {
+		return;
+	}
+
+	const payload = Object.assign({
+		timestamp: new Date().toISOString(),
+		level,
+		event
+	}, details);
+
+	const output = JSON.stringify(payload);
+	if (level === 'error') {
+		console.error(output);
+	} else {
+		console.log(output);
+	}
+}
+
 function findChild(name, children, def = null) {
 	for (let child of children) {
 		if (child.name === name) {
@@ -164,6 +186,39 @@ app.use(views(path.join(__dirname, 'views'), {
 }));
 
 app.use(async (ctx, next) => {
+	try {
+		await next();
+	} catch (err) {
+		ctx.status = err.status || 500;
+		if (!ctx.body) {
+			ctx.body = 'Internal Server Error';
+		}
+
+		log('error', 'request_error', {
+			method: ctx.method,
+			path: ctx.path,
+			status: ctx.status,
+			message: err.message
+		});
+
+		ctx.app.emit('error', err, ctx);
+	}
+});
+
+app.use(async (ctx, next) => {
+	const start = Date.now();
+	await next();
+
+	log('info', 'request', {
+		method: ctx.method,
+		path: ctx.path,
+		status: ctx.status,
+		durationMs: Date.now() - start,
+		ip: ctx.ip
+	});
+});
+
+app.use(async (ctx, next) => {
 	// Normalize text/xml to application/xml for downstream parsers
 	const type = ctx.request.headers['content-type'];
 	if (type && type.indexOf('text/xml') === 0) {
@@ -184,4 +239,11 @@ app.use(bodyParser());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.listen(process.env.PORT || 8000);
+const port = process.env.PORT || 8000;
+app.listen(port);
+
+log('info', 'server_started', { port });
+
+app.on('error', (err) => {
+	log('error', 'app_error', { message: err.message });
+});

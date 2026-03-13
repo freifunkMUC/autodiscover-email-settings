@@ -46,6 +46,17 @@ Replace above variables with data according to this table
 
 ## Usage
 
+### Logging
+
+The service emits JSON logs to stdout/stderr by default:
+- startup event (`server_started`)
+- per-request access logs (`request`)
+- unhandled request errors (`request_error`/`app_error`)
+
+Control logging verbosity with `LOG_LEVEL`:
+- `info` (default): startup + request + error logs
+- `silent` or `none`: disable all application logs
+
 [traefik](https://github.com/containous/traefik) can proxy your containers on docker, on docker swarm, and on a wide range of orchestrators.
 You can also achieve this with another proxy like [Nginx](https://www.nginx.com/) for instance.
 
