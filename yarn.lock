@@ -567,10 +567,10 @@ koa-xml-body@^3.0.0:
     raw-body "^2.5.2"
     xml2js "^0.6.0"
 
-koa@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/koa/-/koa-3.1.2.tgz#f680316351ba23a652b50405d0be03b6161e4c0b"
-  integrity sha512-2LOQnFKu3m0VxpE+5sb5+BRTSKrXmNxGgxVRiKwD9s5KQB1zID/FRXhtzeV7RT1L2GVpdEEAfVuclFOMGl1ikA==
+koa@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/koa/-/koa-3.2.1.tgz#c99b0c17469418ad5672d3f5832a5610cd6500e4"
+  integrity sha512-e7IpWJrnanNUroVK2taAgMxoEZvHLXdQiNjeExSu/DEIWm83jaKGBgb7tLmu2rMYpA027qFB3iLR/k3AVpFRnA==
   dependencies:
     accepts "^1.3.8"
     content-disposition "~1.0.1"
