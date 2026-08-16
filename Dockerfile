@@ -6,13 +6,14 @@ EXPOSE 8000
 
 WORKDIR /app
 
-# Install production dependencies using the frozen lockfile for reproducible builds
-COPY package.json yarn.lock ./
+# Install production dependencies using the locked versions for reproducible builds
+# --legacy-peer-deps: koa-xml-body still declares a peer dep on koa@^2, though it
+# works fine with koa 3 (no koa-2-specific API surface is used)
+COPY package.json package-lock.json ./
 RUN set -ex; \
     node --version; \
-    yarn --version; \
-    yarn install --production --frozen-lockfile --non-interactive; \
-    yarn cache clean
+    npm ci --omit=dev --legacy-peer-deps; \
+    npm cache clean --force
 
 # Copy application files
 COPY index.js settings.js ./

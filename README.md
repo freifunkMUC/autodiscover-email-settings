@@ -209,9 +209,9 @@ server {
 ### service
 
 The following is an example of `systemd` service configuration for Autodiscover Email Settings. The following setup assumes the following:
-- `node` and `yarn` are installed on your marchine
+- `node` and `npm` are installed on your marchine
 - project is located at `/srv/http/autodiscover`
-- the project dependencies have been previously installed with `yarn --prod`
+- the project dependencies have been previously installed with `npm ci --omit=dev`
 - there is an `autodiscover` user and group with sufficient permissions to read the project and run `node`
 
 ```properties
