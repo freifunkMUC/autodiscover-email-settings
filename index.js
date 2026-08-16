@@ -155,7 +155,8 @@ router.get("/email.mobileconfig", async (ctx) => {
 		email = `${username}@${domain}`;
 	}
 
-	const filename = `${domain}.mobileconfig`;
+	const safeDomain = domain.replace(/[^a-zA-Z0-9.-]/g, '_');
+	const filename = `${safeDomain}.mobileconfig`;
 
 	const imapssl = settings.imap.socket === "SSL" || settings.imap.socket === "STARTTLS" ? "true" : "false";
 	const popssl = settings.pop.socket === "SSL" || settings.pop.socket === "STARTTLS" ? "true" : "false";

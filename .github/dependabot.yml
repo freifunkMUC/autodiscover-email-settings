@@ -3,7 +3,7 @@
 version: 2
 
 updates:
-  - package-ecosystem: gomod
+  - package-ecosystem: npm
     directory: /
     schedule: { interval: monthly }
 
@@ -12,17 +12,5 @@ updates:
     schedule: { interval: monthly }
 
   - package-ecosystem: docker
-    directory: /
-    schedule: { interval: monthly }
-
-  - package-ecosystem: docker
-    directory: /proto/
-    schedule: { interval: monthly }
-
-  - package-ecosystem: npm
-    directory: /website
-    schedule: { interval: monthly }
-
-  - package-ecosystem: pip
     directory: /
     schedule: { interval: monthly }

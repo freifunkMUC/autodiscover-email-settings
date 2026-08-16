@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/monogramm/autodiscover-email-settings.git"
+    "url": "git+https://github.com/freifunkMUC/autodiscover-email-settings.git"
   },
   "author": "Monogramm",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/monogramm/autodiscover-email-settings/issues"
+    "url": "https://github.com/freifunkMUC/autodiscover-email-settings/issues"
   },
-  "homepage": "https://github.com/monogramm/autodiscover-email-settings#readme",
+  "homepage": "https://github.com/freifunkMUC/autodiscover-email-settings#readme",
   "keywords": [
     "monogramm",
     "autoconfigure",

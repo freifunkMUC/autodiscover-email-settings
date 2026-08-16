@@ -1,9 +1,6 @@
 # ![Autodiscover](icon.svg) Autodiscover Email Settings
 
-[![Build Status](https://travis-ci.org/Monogramm/autodiscover-email-settings.svg)](https://travis-ci.org/Monogramm/autodiscover-email-settings)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f471992f0aa348b791c9ed17ccea344d)](https://www.codacy.com/gh/Monogramm/autodiscover-email-settings?utm_source=github.com&utm_medium=referral&utm_content=Monogramm/autodiscover-email-settings&utm_campaign=Badge_Grade)
-[![Docker Pulls](https://img.shields.io/docker/pulls/monogramm/autodiscover-email-settings.svg)](https://hub.docker.com/r/monogramm/autodiscover-email-settings/)
-![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/monogramm/autodiscover-email-settings)
+[![Build Docker image](https://github.com/freifunkMUC/autodiscover-email-settings/actions/workflows/build.yml/badge.svg)](https://github.com/freifunkMUC/autodiscover-email-settings/actions/workflows/build.yml)
 
 This service is created to autodiscover your provider email settings.
 
@@ -71,7 +68,7 @@ version: '2'
 
 services:
   autodiscover-example-com:
-    image: monogramm/autodiscover-email-settings:latest
+    image: ghcr.io/freifunkmuc/autodiscover-email-settings:latest
     container_name: autodiscover
     environment:
       - COMPANY_NAME=Company
@@ -117,7 +114,7 @@ version: '3'
 
 services:
   autodiscover-example-com:
-    image: monogramm/autodiscover-email-settings:latest
+    image: ghcr.io/freifunkmuc/autodiscover-email-settings:latest
     container_name: autodiscover
     environment:
       - COMPANY_NAME=Company
