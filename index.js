@@ -50,33 +50,75 @@ function findChild(name, children, def = null) {
 	return def;
 }
 
-function extractEmailFromXml(raw) {
+const RESPONSE_SCHEMA_DEFAULT = "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
+
+// Outlook asks for a specific response schema and expects the answer in that schema.
+// The value is echoed into an xmlns attribute, so only the schemas Outlook actually
+// asks for are accepted; anything else falls back to the default instead of being
+// reflected back to the client.
+const RESPONSE_SCHEMA_ALLOWED = /^https?:\/\/schemas\.microsoft\.com\/exchange\/autodiscover\/(?:outlook\/)?responseschema\/[0-9]{4}[a-z]?$/i;
+
+function decodeXmlEntities(value) {
+	return value
+		.replace(/&lt;/gi, "<")
+		.replace(/&gt;/gi, ">")
+		.replace(/&quot;/gi, "\"")
+		.replace(/&apos;/gi, "'")
+		.replace(/&#x([0-9a-f]+);/gi, (match, hex) => {
+			const code = parseInt(hex, 16);
+			return code >= 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : "";
+		})
+		.replace(/&#([0-9]+);/g, (match, dec) => {
+			const code = parseInt(dec, 10);
+			return code >= 0 && code <= 0x10FFFF ? String.fromCodePoint(code) : "";
+		})
+		// &amp; is decoded last, otherwise "&amp;lt;" would turn into "<"
+		.replace(/&amp;/gi, "&");
+}
+
+// Reads the text of the first matching element out of the raw request body.
+// Entities are decoded here: without it the value keeps its XML encoding and gets
+// escaped a second time on output ("a&b" comes back as "a&amp;amp;b").
+function extractTagFromXml(raw, tag) {
 	if (!raw) return null;
-	const m = raw.match(/<EMailAddress>([^<]+)<\/EMailAddress>/i);
-	return m ? m[1] : null;
+	const match = raw.match(new RegExp("<(?:[A-Za-z0-9_.-]+:)?" + tag + "(?:\\s[^>]*)?>([^<]*)<\\/", "i"));
+	if (!match) return null;
+	const value = decodeXmlEntities(match[1]).trim();
+	return value === "" ? null : value;
 }
 
 // Microsoft Outlook / Apple Mail
 async function autodiscover(ctx) {
 	// Try to use parsed body if available, otherwise fallback to raw XML extraction
 	let email = null;
+	let xmlns = null;
 	if (ctx.request.body && typeof ctx.request.body === 'object') {
 		const request = ctx.request.body.root && ctx.request.body.root.children ?
 			findChild("Request", ctx.request.body.root.children) : null;
 		const schema = request !== null ? findChild("AcceptableResponseSchema", request.children) : null;
-		const xmlns = schema !== null ? schema.content : "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
+		if (schema !== null && schema.content) {
+			xmlns = schema.content;
+		}
 
 		let emailNode = request !== null ? findChild("EMailAddress", request.children) : null;
 		if (emailNode && emailNode.content) {
 			email = emailNode.content;
 		}
-
-		ctx.state._xmlns = xmlns;
 	}
 
+	// The parsed-body branch above only matches the shape of the previous XML parser.
+	// The current one yields a different tree, so in practice the raw body is what
+	// carries both values — the requested schema included, which was otherwise lost
+	// and every client silently answered in the generic schema.
+	const raw = ctx.request.rawBody || (typeof ctx.request.body === 'string' ? ctx.request.body : null);
 	if (!email) {
-		const raw = ctx.request.rawBody || (typeof ctx.request.body === 'string' ? ctx.request.body : null);
-		email = extractEmailFromXml(raw);
+		email = extractTagFromXml(raw, "EMailAddress");
+	}
+	if (!xmlns) {
+		xmlns = extractTagFromXml(raw, "AcceptableResponseSchema");
+	}
+	if (!xmlns || !RESPONSE_SCHEMA_ALLOWED.test(xmlns)) {
+		xmlns = RESPONSE_SCHEMA_DEFAULT;
 	}
 
 	let username;
@@ -103,7 +145,7 @@ async function autodiscover(ctx) {
 	const smtpssl = settings.smtp.socket === "SSL" ? "on" : "off";
 
 	await ctx.render('autodiscover.xml', Object.assign({}, settings, {
-		schema: ctx.state._xmlns || "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006",
+		schema: xmlns,
 		email,
 		username,
 		domain,
