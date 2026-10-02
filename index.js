@@ -188,10 +188,14 @@ router.get("/autodiscover/autodiscover.json/v1.0/:address", autodiscoverJson);
 
 
 // Thunderbird
-router.get("/mail/config-v1.1.xml", async (ctx) => {
+async function autoconfig(ctx) {
 	await ctx.render('autoconfig.xml', ctx.settings);
 	ctx.type = "application/xml";
-});
+}
+
+router.get("/mail/config-v1.1.xml", autoconfig);
+// Thunderbird also tries https://<domain>/.well-known/..., if the domain's web server forwards it
+router.get("/.well-known/autoconfig/mail/config-v1.1.xml", autoconfig);
 
 
 // Name-based UUID (RFC 9562, version 8 with SHA-256 as in appendix B.2):
