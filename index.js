@@ -4,7 +4,7 @@ const path = require("path");
 const crypto = require("crypto");
 const Koa = require("koa");
 const views = require("@ladjs/koa-views");
-const rawBody = require("raw-body");
+const { getRawBody } = require("raw-body");
 const xml2js = require("xml2js");
 const bodyParser = require("koa-bodyparser");
 const Router = require("@koa/router");
@@ -59,7 +59,7 @@ async function xmlBody(ctx, next) {
 		return next();
 	}
 
-	const text = await rawBody(ctx.req, {
+	const text = await getRawBody(ctx.req, {
 		limit: '1mb',
 		encoding: ctx.request.charset || 'utf8',
 		length: ctx.request.headers['content-length']
