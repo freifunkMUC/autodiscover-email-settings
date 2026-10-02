@@ -120,3 +120,9 @@ test("autodiscover does not ask clients to log in with a Windows domain", async 
 		assert.equal(protocol.DomainName, undefined);
 	}
 });
+
+test("autodiscover reports the user's address as DisplayName rather than COMPANY_NAME", async () => {
+	const response = await autodiscover({ COMPANY_NAME: "Example Inc." }, requestBody("alice@example.org"));
+
+	assert.equal(response.User.DisplayName, "alice@example.org");
+});

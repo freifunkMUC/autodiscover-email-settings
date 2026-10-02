@@ -4,7 +4,7 @@
         <Response
                 xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
                 <User>
-                        <DisplayName>{{info.name}}</DisplayName>
+                        <DisplayName>{{email}}</DisplayName>
                 </User>
                 <Account>
                         <AccountType>email</AccountType>
