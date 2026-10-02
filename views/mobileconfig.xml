@@ -6,7 +6,7 @@
 	<false/>
 	<key>PayloadContent</key>
 	<array>
-{% if imap.host or pop.host %}
+{% if mailPayload %}
 		<dict>
 			<key>EmailAccountDescription</key>
 			<string>{{email}}</string>

@@ -224,8 +224,22 @@ function profileIdentifiers(mobile, email) {
 	};
 }
 
+// Apple requires an outgoing server in a mail payload, so it needs SMTP besides IMAP or POP.
+function hasMailPayload(settings) {
+	return Boolean((settings.imap.host || settings.pop.host) && settings.smtp.host);
+}
+
+function hasProfile(settings) {
+	return hasMailPayload(settings) || Boolean(settings.ldap.host);
+}
+
 // iOS / Apple Mail (/email.mobileconfig?email=username@domain.com or /email.mobileconfig?email=username)
 router.get("/email.mobileconfig", async (ctx) => {
+	if (!hasProfile(ctx.settings)) {
+		ctx.status = 404;
+		return;
+	}
+
 	let email = ctx.request.query.email;
 
 	// Ensure email is a single string value, not an array, to avoid type confusion issues
@@ -268,6 +282,7 @@ router.get("/email.mobileconfig", async (ctx) => {
 		popssl,
 		smtpssl,
 		ldapssl,
+		mailPayload: hasMailPayload(ctx.settings),
 		mobile: profileIdentifiers(ctx.settings.mobile, email)
 	}));
 	ctx.type = "application/x-apple-aspen-config";
@@ -276,7 +291,7 @@ router.get("/email.mobileconfig", async (ctx) => {
 
 // Generic support page
 router.get("/", async (ctx) => {
-	await ctx.render('index.html', ctx.settings);
+	await ctx.render('index.html', Object.assign({}, ctx.settings, { profile: hasProfile(ctx.settings) }));
 });
 
 router.get("/favicon.ico", async (ctx) => {
