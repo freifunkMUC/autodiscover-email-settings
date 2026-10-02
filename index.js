@@ -154,6 +154,26 @@ router.get("/Autodiscover/Autodiscover.xml", autodiscover);
 router.post("/Autodiscover/Autodiscover.xml", autodiscover);
 
 
+// Autodiscover v2, queried by Microsoft's cloud account setup for new Outlook
+// (GET /autodiscover/autodiscover.json[/v1.0/<address>]?Protocol=...).
+async function autodiscoverJson(ctx) {
+	const protocol = String(ctx.query.Protocol || ctx.query.protocol || "").toLowerCase();
+
+	if (protocol === "autodiscoverv1") {
+		ctx.body = { Protocol: "AutodiscoverV1", Url: `https://${ctx.host}/autodiscover/autodiscover.xml` };
+	} else {
+		ctx.status = 400;
+		ctx.body = {
+			ErrorCode: "InvalidProtocol",
+			ErrorMessage: "The given protocol value is invalid. Supported values are AutodiscoverV1."
+		};
+	}
+}
+
+router.get("/autodiscover/autodiscover.json", autodiscoverJson);
+router.get("/autodiscover/autodiscover.json/v1.0/:address", autodiscoverJson);
+
+
 // Thunderbird
 router.get("/mail/config-v1.1.xml", async (ctx) => {
 	await ctx.render('autoconfig.xml', ctx.settings);
