@@ -97,25 +97,20 @@ function readXmlText(body, path) {
 	return element && typeof element._ === "string" ? element._.trim() || null : null;
 }
 
-// Microsoft Outlook / Apple Mail
-async function autodiscover(ctx) {
-	let email = readXmlText(ctx.request.body, ["Autodiscover", "Request", "EMailAddress"]);
+const OUTLOOK_RESPONSE_SCHEMA = "http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a";
+const MOBILESYNC_RESPONSE_SCHEMA = "http://schemas.microsoft.com/exchange/autodiscover/mobilesync/responseschema/2006";
 
-	let username;
-	let domain;
+function parseAutodiscoverAddress(email, defaultDomain) {
 	if (!email) {
-		email = "";
-		username = "";
-		domain = ctx.settings.domain;
-	} else if (email.indexOf("@") !== -1) {
-		username = email.split("@")[0];
-		domain = email.split("@")[1];
-	} else {
-		username = email;
-		domain = ctx.settings.domain;
-		email = `${username}@${domain}`;
+		return { email: "", username: "", domain: defaultDomain };
 	}
+	if (email.indexOf("@") !== -1) {
+		return { email, username: email.split("@")[0], domain: email.split("@")[1] };
+	}
+	return { email: `${email}@${defaultDomain}`, username: email, domain: defaultDomain };
+}
 
+async function renderOutlookSettings(ctx, address) {
 	const imapenc = ctx.settings.imap.socket === "STARTTLS" ? "TLS" : ctx.settings.imap.socket;
 	const popenc = ctx.settings.pop.socket === "STARTTLS" ? "TLS" : ctx.settings.pop.socket;
 	const smtpenc = ctx.settings.smtp.socket === "STARTTLS" ? "TLS" : ctx.settings.smtp.socket;
@@ -124,11 +119,7 @@ async function autodiscover(ctx) {
 	const popssl = ctx.settings.pop.socket === "SSL" ? "on" : "off";
 	const smtpssl = ctx.settings.smtp.socket === "SSL" ? "on" : "off";
 
-	await ctx.render('autodiscover.xml', Object.assign({}, ctx.settings, {
-		schema: "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006",
-		email,
-		username,
-		domain,
+	await ctx.render('autodiscover.xml', Object.assign({}, ctx.settings, address, {
 		imapenc,
 		popenc,
 		smtpenc,
@@ -136,6 +127,24 @@ async function autodiscover(ctx) {
 		popssl,
 		smtpssl
 	}));
+}
+
+// Microsoft Outlook / Apple Mail
+async function autodiscover(ctx) {
+	const body = ctx.request.body;
+	const address = parseAutodiscoverAddress(
+		readXmlText(body, ["Autodiscover", "Request", "EMailAddress"]), ctx.settings.domain);
+	// Clients must name the schema they can parse; requests without one are treated as Outlook.
+	const schema = (readXmlText(body, ["Autodiscover", "Request", "AcceptableResponseSchema"]) ||
+		OUTLOOK_RESPONSE_SCHEMA).toLowerCase();
+
+	if (schema === OUTLOOK_RESPONSE_SCHEMA.toLowerCase()) {
+		await renderOutlookSettings(ctx, address);
+	} else if (schema === MOBILESYNC_RESPONSE_SCHEMA.toLowerCase() && ctx.settings.mobilesync.url) {
+		await ctx.render('autodiscover-mobilesync.xml', Object.assign({}, ctx.settings, address));
+	} else {
+		await ctx.render('autodiscover-error.xml', { code: 601, message: "Provider is not available" });
+	}
 	ctx.type = "application/xml";
 }
 
