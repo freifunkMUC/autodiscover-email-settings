@@ -53,6 +53,17 @@ It is only returned to clients that ask Autodiscover for ActiveSync settings; `M
 New Outlook for Windows only gets it from `autodiscover.json` with `MOBILESYNC_AUTODISCOVER_JSON=true`.
 Leave that off unless your ActiveSync server works with new Outlook: once it gets an ActiveSync URL, it does not fall back to IMAP.
 
+### Apple configuration profiles
+
+The support page offers a configuration profile for iOS and macOS at `/email.mobileconfig?email=<address>`.
+It works with `DOMAIN` alone; two optional settings control its identifiers:
+
+- `PROFILE_IDENTIFIER`: reverse-DNS prefix for the profile, default `com.example.autodiscover` for `DOMAIN=example.com`.
+- `PROFILE_UUID`: namespace from which each address's profile UUIDs are derived. Changing it makes devices treat new downloads as different profiles.
+
+Each address gets its own identifiers, so profiles for several accounts can be installed on one device.
+The profile is not signed, so devices show it as unverified.
+
 ### Logging
 
 The service emits JSON logs to stdout/stderr by default:
@@ -106,11 +117,9 @@ services:
       - LDAP_USER_FIELD=uid
       - LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com
       - LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))
-      # Apple mobile config identifiers (identifier mandatory to enable)
+      # Apple configuration profile identifiers (optional, derived from DOMAIN)
       - PROFILE_IDENTIFIER=com.example.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
-      - MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC
-      - LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E
     labels:
       - "traefik.port=8000"
       - "traefik.frontend.rule=Host:autoconfig.example.com,autodiscover.example.com"
@@ -151,11 +160,9 @@ services:
       - LDAP_USER_FIELD=uid
       - LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com
       - LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))
-      # Apple mobile config identifiers (identifier mandatory to enable)
+      # Apple configuration profile identifiers (optional, derived from DOMAIN)
       - PROFILE_IDENTIFIER=com.example.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
-      - MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC
-      - LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E
     deploy:
       replicas: 1
       labels:
@@ -264,11 +271,9 @@ Environment="SMTP_SOCKET=SSL"
 #Environment="LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com"
 #Environment="LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))"
 
-# Apple mobile config identifiers (identifier mandatory to enable)
+# Apple configuration profile identifiers (optional, derived from DOMAIN)
 Environment="PROFILE_IDENTIFIER=com.example.autodiscover"
 Environment="PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86"
-Environment="MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC"
-#Environment="LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E"
 
 ExecStart=/usr/bin/node /srv/http/autodiscover/index.js
 Restart=always

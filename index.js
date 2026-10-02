@@ -194,6 +194,32 @@ router.get("/mail/config-v1.1.xml", async (ctx) => {
 });
 
 
+// Name-based UUID (RFC 9562, version 8 with SHA-256 as in appendix B.2):
+// the same name always yields the same UUID.
+function nameBasedUuid(name, namespace) {
+	const hash = crypto.createHash("sha256")
+		.update(Buffer.from(namespace.replace(/-/g, ""), "hex"))
+		.update(name)
+		.digest();
+	hash[6] = (hash[6] & 0x0f) | 0x80;
+	hash[8] = (hash[8] & 0x3f) | 0x80;
+	const hex = hash.toString("hex", 0, 16).toUpperCase();
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+// A device keeps one profile per PayloadIdentifier, so each address gets its own,
+// derived from the address to stay the same across downloads.
+function profileIdentifiers(mobile, email) {
+	const name = email.toLowerCase();
+	const uuid = nameBasedUuid(name, mobile.uuid);
+	return {
+		identifier: `${mobile.identifier}.${uuid}`,
+		uuid,
+		mail: { uuid: nameBasedUuid(`mail:${name}`, mobile.uuid) },
+		ldap: { uuid: nameBasedUuid(`ldap:${name}`, mobile.uuid) }
+	};
+}
+
 // iOS / Apple Mail (/email.mobileconfig?email=username@domain.com or /email.mobileconfig?email=username)
 router.get("/email.mobileconfig", async (ctx) => {
 	let email = ctx.request.query.email;
@@ -237,7 +263,8 @@ router.get("/email.mobileconfig", async (ctx) => {
 		imapssl,
 		popssl,
 		smtpssl,
-		ldapssl
+		ldapssl,
+		mobile: profileIdentifiers(ctx.settings.mobile, email)
 	}));
 	ctx.type = "application/x-apple-aspen-config";
 });

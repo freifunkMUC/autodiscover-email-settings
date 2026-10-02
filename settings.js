@@ -37,13 +37,10 @@ module.exports = (env) => ({
 		searchfilter: env.LDAP_SEARCH
 	},
 	mobile: {
-		identifier: env.PROFILE_IDENTIFIER,
-		uuid: env.PROFILE_UUID,
-		mail: {
-			uuid: env.MAIL_UUID,
-		},
-		ldap: {
-			uuid: env.LDAP_UUID,
-		}
+		// e.g. com.example.autodiscover
+		identifier: env.PROFILE_IDENTIFIER ||
+			`${(env.DOMAIN || 'example.com').split('.').reverse().join('.')}.autodiscover`,
+		// namespace for the per-address profile UUIDs; any fixed UUID works
+		uuid: env.PROFILE_UUID || '4F141241-A498-4E67-A080-624A13BFA779'
 	}
 });
