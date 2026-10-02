@@ -95,3 +95,11 @@ test("autodiscover names the protocols IMAP, POP3 and SMTP as MS-OXDSCLI defines
 
 	assert.deepEqual(protocols(response).map((p) => p.Type), ["IMAP", "POP3", "SMTP"]);
 });
+
+test("autodiscover keeps SSL=on for STARTTLS so clients reading only <SSL> do not fall back to plaintext", async () => {
+	const response = await autodiscover({ SMTP_PORT: "587", SMTP_SOCKET: "STARTTLS" }, requestBody("alice@example.org"));
+	const smtp = protocols(response).find((p) => p.Type === "SMTP");
+
+	assert.equal(smtp.SSL, "on");
+	assert.equal(smtp.Encryption, "TLS");
+});

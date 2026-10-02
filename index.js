@@ -115,9 +115,12 @@ async function renderOutlookSettings(ctx, address) {
 	const popenc = ctx.settings.pop.socket === "STARTTLS" ? "TLS" : ctx.settings.pop.socket;
 	const smtpenc = ctx.settings.smtp.socket === "STARTTLS" ? "TLS" : ctx.settings.smtp.socket;
 
-	const imapssl = ctx.settings.imap.socket === "SSL" ? "on" : "off";
-	const popssl = ctx.settings.pop.socket === "SSL" ? "on" : "off";
-	const smtpssl = ctx.settings.smtp.socket === "SSL" ? "on" : "off";
+	// <Encryption> tells implicit TLS from STARTTLS. Clients that ignore it, Thunderbird
+	// among them, read <SSL>off</SSL> as plaintext, so SSL is on for either.
+	const tls = (socket) => (socket === "SSL" || socket === "STARTTLS" ? "on" : "off");
+	const imapssl = tls(ctx.settings.imap.socket);
+	const popssl = tls(ctx.settings.pop.socket);
+	const smtpssl = tls(ctx.settings.smtp.socket);
 
 	await ctx.render('autodiscover.xml', Object.assign({}, ctx.settings, address, {
 		imapenc,
