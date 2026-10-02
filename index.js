@@ -78,43 +78,28 @@ async function xmlBody(ctx, next) {
 	return next();
 }
 
-function findChild(name, children, def = null) {
-	for (let child of children) {
-		if (child.name === name) {
-			return child;
-		}
-	}
-	return def;
+function localName(element) {
+	return typeof element["#name"] === "string" ? element["#name"].replace(/^.*:/, "") : null;
 }
 
-function extractEmailFromXml(raw) {
-	if (!raw) return null;
-	const m = raw.match(/<EMailAddress>([^<]+)<\/EMailAddress>/i);
-	return m ? m[1] : null;
+function childElement(element, name) {
+	return (element.$$ || []).find((child) => localName(child) === name);
+}
+
+// Walks the xml2js tree by local element names, so namespace prefixes do not matter,
+// and returns the trimmed text of the element at the end of `path`.
+function readXmlText(body, path) {
+	const root = body && typeof body === "object" ? Object.values(body)[0] : null;
+	let element = root && localName(root) === path[0] ? root : null;
+	for (const name of path.slice(1)) {
+		element = element && childElement(element, name);
+	}
+	return element && typeof element._ === "string" ? element._.trim() || null : null;
 }
 
 // Microsoft Outlook / Apple Mail
 async function autodiscover(ctx) {
-	// Try to use parsed body if available, otherwise fallback to raw XML extraction
-	let email = null;
-	if (ctx.request.body && typeof ctx.request.body === 'object') {
-		const request = ctx.request.body.root && ctx.request.body.root.children ?
-			findChild("Request", ctx.request.body.root.children) : null;
-		const schema = request !== null ? findChild("AcceptableResponseSchema", request.children) : null;
-		const xmlns = schema !== null ? schema.content : "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006";
-
-		let emailNode = request !== null ? findChild("EMailAddress", request.children) : null;
-		if (emailNode && emailNode.content) {
-			email = emailNode.content;
-		}
-
-		ctx.state._xmlns = xmlns;
-	}
-
-	if (!email) {
-		const raw = ctx.request.rawBody || (typeof ctx.request.body === 'string' ? ctx.request.body : null);
-		email = extractEmailFromXml(raw);
-	}
+	let email = readXmlText(ctx.request.body, ["Autodiscover", "Request", "EMailAddress"]);
 
 	let username;
 	let domain;
@@ -140,7 +125,7 @@ async function autodiscover(ctx) {
 	const smtpssl = ctx.settings.smtp.socket === "SSL" ? "on" : "off";
 
 	await ctx.render('autodiscover.xml', Object.assign({}, ctx.settings, {
-		schema: ctx.state._xmlns || "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006",
+		schema: "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006",
 		email,
 		username,
 		domain,
