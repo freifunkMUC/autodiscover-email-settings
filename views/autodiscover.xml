@@ -27,7 +27,7 @@
 
                         {%- if pop.host %}
                         <Protocol>
-                                <Type>POP</Type>
+                                <Type>POP3</Type>
                                 <Server>{{pop.host}}</Server>
                                 <Port>{{pop.port}}</Port>
                                 <LoginName>{{email}}</LoginName>

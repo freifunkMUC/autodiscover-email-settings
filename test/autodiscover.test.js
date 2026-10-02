@@ -89,3 +89,9 @@ test("autodiscover sends SPA=off so clients use plain login instead of NTLM", as
 		assert.equal(protocol.SPA, "off");
 	}
 });
+
+test("autodiscover names the protocols IMAP, POP3 and SMTP as MS-OXDSCLI defines them", async () => {
+	const response = await autodiscover({}, requestBody("alice@example.org"));
+
+	assert.deepEqual(protocols(response).map((p) => p.Type), ["IMAP", "POP3", "SMTP"]);
+});
