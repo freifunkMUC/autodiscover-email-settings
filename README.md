@@ -107,8 +107,6 @@ services:
       # Apple mobile config identifiers (identifier mandatory to enable)
       - PROFILE_IDENTIFIER=com.example.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
-      - MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC
-      - LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E
     labels:
       - "traefik.port=8000"
       - "traefik.frontend.rule=Host:autoconfig.example.com,autodiscover.example.com"
@@ -152,8 +150,6 @@ services:
       # Apple mobile config identifiers (identifier mandatory to enable)
       - PROFILE_IDENTIFIER=com.example.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
-      - MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC
-      - LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E
     deploy:
       replicas: 1
       labels:
@@ -265,8 +261,6 @@ Environment="SMTP_SOCKET=SSL"
 # Apple mobile config identifiers (identifier mandatory to enable)
 Environment="PROFILE_IDENTIFIER=com.example.autodiscover"
 Environment="PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86"
-Environment="MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC"
-#Environment="LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E"
 
 ExecStart=/usr/bin/node /srv/http/autodiscover/index.js
 Restart=always

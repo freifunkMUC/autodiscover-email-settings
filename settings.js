@@ -37,12 +37,6 @@ module.exports = (env) => ({
 	},
 	mobile: {
 		identifier: env.PROFILE_IDENTIFIER,
-		uuid: env.PROFILE_UUID,
-		mail: {
-			uuid: env.MAIL_UUID,
-		},
-		ldap: {
-			uuid: env.LDAP_UUID,
-		}
+		uuid: env.PROFILE_UUID
 	}
 });
