@@ -27,3 +27,10 @@ test("an empty POP_HOST leaves POP3 out instead of falling back to pop.<DOMAIN>"
 
 	assert.equal(provider.incomingServer.$.type, "imap");
 });
+
+test("autoconfig is also served at the .well-known URL Thunderbird tries on the bare domain", async () => {
+	const res = await request({ DOMAIN: "example.com" }, "/.well-known/autoconfig/mail/config-v1.1.xml");
+
+	assert.equal(res.status, 200);
+	assert.equal((await parseXml(res.body)).clientConfig.emailProvider.domain, "example.com");
+});

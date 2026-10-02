@@ -212,6 +212,16 @@ server {
 }
 ```
 
+Thunderbird also looks for `https://example.com/.well-known/autoconfig/mail/config-v1.1.xml` on the bare domain.
+If that domain is served by another nginx site, forward the path from there:
+
+```nginx
+location /.well-known/autoconfig/ {
+    proxy_set_header Host $http_host;
+    proxy_pass http://127.0.0.1:8000;
+}
+```
+
 ### service
 
 The following is an example of `systemd` service configuration for Autodiscover Email Settings. The following setup assumes the following:

@@ -155,10 +155,14 @@ router.post("/Autodiscover/Autodiscover.xml", autodiscover);
 
 
 // Thunderbird
-router.get("/mail/config-v1.1.xml", async (ctx) => {
+async function autoconfig(ctx) {
 	await ctx.render('autoconfig.xml', ctx.settings);
 	ctx.type = "application/xml";
-});
+}
+
+router.get("/mail/config-v1.1.xml", autoconfig);
+// Thunderbird also tries https://<domain>/.well-known/..., if the domain's web server forwards it
+router.get("/.well-known/autoconfig/mail/config-v1.1.xml", autoconfig);
 
 
 // iOS / Apple Mail (/email.mobileconfig?email=username@domain.com or /email.mobileconfig?email=username)
