@@ -81,3 +81,11 @@ test("autodiscover returns error 601 for a MobileSync request without MOBILESYNC
 	assert.equal(response.Error.ErrorCode, "601");
 	assert.equal(response.Account, undefined);
 });
+
+test("autodiscover sends SPA=off so clients use plain login instead of NTLM", async () => {
+	const response = await autodiscover({}, requestBody("alice@example.org"));
+
+	for (const protocol of protocols(response)) {
+		assert.equal(protocol.SPA, "off");
+	}
+});
