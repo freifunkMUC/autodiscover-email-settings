@@ -147,7 +147,7 @@ async function autodiscover(ctx) {
 		await ctx.render('autodiscover-error.xml', { code: 600, message: "Invalid Request" });
 	} else if (schema === OUTLOOK_RESPONSE_SCHEMA.toLowerCase()) {
 		await renderOutlookSettings(ctx, address);
-	} else if (schema === MOBILESYNC_RESPONSE_SCHEMA.toLowerCase() && ctx.settings.mobilesync.url) {
+	} else if (schema === MOBILESYNC_RESPONSE_SCHEMA.toLowerCase()) {
 		await ctx.render('autodiscover-mobilesync.xml', Object.assign({}, ctx.settings, address));
 	} else {
 		await ctx.render('autodiscover-error.xml', { code: 601, message: "Provider is not available" });

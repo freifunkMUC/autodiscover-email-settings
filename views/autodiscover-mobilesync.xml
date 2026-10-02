@@ -7,6 +7,7 @@
 			<EMailAddress>{{email}}</EMailAddress>
 		</User>
 		<Action>
+			{%- if mobilesync.url %}
 			<Settings>
 				<Server>
 					<Type>MobileSync</Type>
@@ -14,6 +15,13 @@
 					<Name>{{mobilesync.name or mobilesync.url}}</Name>
 				</Server>
 			</Settings>
+			{%- else %}
+			<Error>
+				<Status>2</Status>
+				<Message>ActiveSync is not offered for this domain</Message>
+				<DebugData>MOBILESYNC_URL is not set</DebugData>
+			</Error>
+			{%- endif %}
 		</Action>
 	</Response>
 </Autodiscover>
