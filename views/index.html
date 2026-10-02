@@ -247,7 +247,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#automatic">Automatic</a>
                 </li>
-                {% if mobile.identifier %}<li class="nav-item">
+                {% if profile %}<li class="nav-item">
                     <a class="nav-link" href="#mobileconfig">iOS</a>
                 </li>{% endif %}
                 <li class="nav-item">
@@ -295,7 +295,7 @@
 
                 <p>If you encounter some issues, depending on your situation, you can:</p>
                 <ul>
-                    {% if mobile.identifier %}<li>easily configure your Apple Mobile devices (<em>iPhone / iPad</em>) with
+                    {% if profile %}<li>easily configure your Apple Mobile devices (<em>iPhone / iPad</em>) with
                         <a href="#mobileconfig">this simple form</a></li>{% endif %}
                     <li>setup your email application with the <a href="#manualconfig">manual configuration</a></li>
                 </ul>
@@ -305,7 +305,7 @@
 
         </div> <!-- /container -->
 
-        {%- if mobile.identifier %}
+        {%- if profile %}
         <div class="container">
             <h3 id="mobileconfig" class="h3 font-weight-normal">Apple Configuration Profile</h3>
 

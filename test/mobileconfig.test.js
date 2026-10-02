@@ -49,3 +49,17 @@ test("mobileconfig produces complete identifiers from DOMAIN alone", async () =>
 		assert.match(uuid, /^[0-9A-F]{8}-[0-9A-F]{4}-8[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/);
 	}
 });
+
+test("mobileconfig leaves the mail account out when SMTP is disabled", async () => {
+	const plist = await mobileconfig({ DOMAIN: "example.com", SMTP_HOST: "", LDAP_HOST: "ldap.example.com" },
+		"alice@example.com");
+
+	assert.deepEqual(strings(plist, "PayloadType"), ["com.apple.ldap.account", "Configuration"]);
+});
+
+test("no profile is offered when it would contain neither mail nor LDAP", async () => {
+	const env = { DOMAIN: "example.com", SMTP_HOST: "" };
+
+	assert.equal((await request(env, "/email.mobileconfig?email=alice%40example.com")).status, 404);
+	assert.doesNotMatch((await request(env, "/")).body, /email\.mobileconfig/);
+});
