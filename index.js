@@ -142,7 +142,10 @@ async function autodiscover(ctx) {
 	const schema = (readXmlText(body, ["Autodiscover", "Request", "AcceptableResponseSchema"]) ||
 		OUTLOOK_RESPONSE_SCHEMA).toLowerCase();
 
-	if (schema === OUTLOOK_RESPONSE_SCHEMA.toLowerCase()) {
+	// A GET from a browser (e.g. the support page link) still gets a preview.
+	if (ctx.method === "POST" && !address.email) {
+		await ctx.render('autodiscover-error.xml', { code: 600, message: "Invalid Request" });
+	} else if (schema === OUTLOOK_RESPONSE_SCHEMA.toLowerCase()) {
 		await renderOutlookSettings(ctx, address);
 	} else if (schema === MOBILESYNC_RESPONSE_SCHEMA.toLowerCase() && ctx.settings.mobilesync.url) {
 		await ctx.render('autodiscover-mobilesync.xml', Object.assign({}, ctx.settings, address));

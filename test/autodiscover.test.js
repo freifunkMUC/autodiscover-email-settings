@@ -126,3 +126,10 @@ test("autodiscover reports the user's address as DisplayName rather than COMPANY
 
 	assert.equal(response.User.DisplayName, "alice@example.org");
 });
+
+test("autodiscover returns error 600 for a POST without an address", async () => {
+	const response = await autodiscover({}, requestBody(""));
+
+	assert.equal(response.Error.ErrorCode, "600");
+	assert.equal(response.Account, undefined);
+});
