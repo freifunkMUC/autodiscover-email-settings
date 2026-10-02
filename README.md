@@ -43,6 +43,11 @@ Replace above variables with data according to this table
 
 ## Usage
 
+### Protocols
+
+`IMAP_HOST`, `POP_HOST` and `SMTP_HOST` default to `imap.`, `pop.` and `smtp.` followed by `DOMAIN`.
+To leave a protocol out of every generated configuration, set its host to an empty string, e.g. `POP_HOST=`.
+
 ### Logging
 
 The service emits JSON logs to stdout/stderr by default:

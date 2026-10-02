@@ -21,3 +21,9 @@ test("autoconfig derives server hostnames from DOMAIN", async () => {
 	assert.equal(provider.outgoingServer.port, "587");
 	assert.equal(provider.outgoingServer.socketType, "STARTTLS");
 });
+
+test("an empty POP_HOST leaves POP3 out instead of falling back to pop.<DOMAIN>", async () => {
+	const provider = await autoconfig({ DOMAIN: "example.com", POP_HOST: "" });
+
+	assert.equal(provider.incomingServer.$.type, "imap");
+});

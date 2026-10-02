@@ -5,19 +5,20 @@ module.exports = (env) => ({
 	},
 	domain: env.DOMAIN || 'example.com',
 
-	// sensible defaults derived from domain when specific env vars are not provided
+	// sensible defaults derived from domain when specific env vars are not provided;
+	// an empty *_HOST disables that protocol
 	imap: {
-		host: env.IMAP_HOST || `imap.${env.DOMAIN || 'example.com'}`,
+		host: env.IMAP_HOST ?? `imap.${env.DOMAIN || 'example.com'}`,
 		port: env.IMAP_PORT || '993',
 		socket: env.IMAP_SOCKET || 'SSL'
 	},
 	pop: {
-		host: env.POP_HOST || `pop.${env.DOMAIN || 'example.com'}`,
+		host: env.POP_HOST ?? `pop.${env.DOMAIN || 'example.com'}`,
 		port: env.POP_PORT || '995',
 		socket: env.POP_SOCKET || 'SSL'
 	},
 	smtp: {
-		host: env.SMTP_HOST || `smtp.${env.DOMAIN || 'example.com'}`,
+		host: env.SMTP_HOST ?? `smtp.${env.DOMAIN || 'example.com'}`,
 		port: env.SMTP_PORT || '587',
 		socket: env.SMTP_SOCKET || 'STARTTLS'
 	},
