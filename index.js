@@ -3,14 +3,13 @@
 const path = require("path");
 const crypto = require("crypto");
 const Koa = require("koa");
-const app = new Koa();
 const views = require("@ladjs/koa-views");
 const rawBody = require("raw-body");
 const xml2js = require("xml2js");
 const bodyParser = require("koa-bodyparser");
 const Router = require("@koa/router");
 const router = new Router();
-const settings = require("./settings.js");
+const loadSettings = require("./settings.js");
 const send = require('koa-send');
 
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLowerCase();
@@ -122,25 +121,25 @@ async function autodiscover(ctx) {
 	if (!email) {
 		email = "";
 		username = "";
-		domain = settings.domain;
+		domain = ctx.settings.domain;
 	} else if (email.indexOf("@") !== -1) {
 		username = email.split("@")[0];
 		domain = email.split("@")[1];
 	} else {
 		username = email;
-		domain = settings.domain;
+		domain = ctx.settings.domain;
 		email = `${username}@${domain}`;
 	}
 
-	const imapenc = settings.imap.socket === "STARTTLS" ? "TLS" : settings.imap.socket;
-	const popenc = settings.pop.socket === "STARTTLS" ? "TLS" : settings.pop.socket;
-	const smtpenc = settings.smtp.socket === "STARTTLS" ? "TLS" : settings.smtp.socket;
+	const imapenc = ctx.settings.imap.socket === "STARTTLS" ? "TLS" : ctx.settings.imap.socket;
+	const popenc = ctx.settings.pop.socket === "STARTTLS" ? "TLS" : ctx.settings.pop.socket;
+	const smtpenc = ctx.settings.smtp.socket === "STARTTLS" ? "TLS" : ctx.settings.smtp.socket;
 
-	const imapssl = settings.imap.socket === "SSL" ? "on" : "off";
-	const popssl = settings.pop.socket === "SSL" ? "on" : "off";
-	const smtpssl = settings.smtp.socket === "SSL" ? "on" : "off";
+	const imapssl = ctx.settings.imap.socket === "SSL" ? "on" : "off";
+	const popssl = ctx.settings.pop.socket === "SSL" ? "on" : "off";
+	const smtpssl = ctx.settings.smtp.socket === "SSL" ? "on" : "off";
 
-	await ctx.render('autodiscover.xml', Object.assign({}, settings, {
+	await ctx.render('autodiscover.xml', Object.assign({}, ctx.settings, {
 		schema: ctx.state._xmlns || "http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006",
 		email,
 		username,
@@ -163,7 +162,7 @@ router.post("/Autodiscover/Autodiscover.xml", autodiscover);
 
 // Thunderbird
 router.get("/mail/config-v1.1.xml", async (ctx) => {
-	await ctx.render('autoconfig.xml', settings);
+	await ctx.render('autoconfig.xml', ctx.settings);
 	ctx.type = "application/xml";
 });
 
@@ -189,22 +188,22 @@ router.get("/email.mobileconfig", async (ctx) => {
 		domain = email.split("@")[1];
 	} else {
 		username = email;
-		domain = settings.domain;
+		domain = ctx.settings.domain;
 		email = `${username}@${domain}`;
 	}
 
 	const safeDomain = domain.replace(/[^a-zA-Z0-9.-]/g, '_');
 	const filename = `${safeDomain}.mobileconfig`;
 
-	const imapssl = settings.imap.socket === "SSL" || settings.imap.socket === "STARTTLS" ? "true" : "false";
-	const popssl = settings.pop.socket === "SSL" || settings.pop.socket === "STARTTLS" ? "true" : "false";
-	const smtpssl = settings.smtp.socket === "SSL" || settings.smtp.socket === "STARTTLS" ? "true" : "false";
-	const ldapssl = settings.ldap.socket === "SSL" || settings.ldap.port === "636" ? "true" : "false";
+	const imapssl = ctx.settings.imap.socket === "SSL" || ctx.settings.imap.socket === "STARTTLS" ? "true" : "false";
+	const popssl = ctx.settings.pop.socket === "SSL" || ctx.settings.pop.socket === "STARTTLS" ? "true" : "false";
+	const smtpssl = ctx.settings.smtp.socket === "SSL" || ctx.settings.smtp.socket === "STARTTLS" ? "true" : "false";
+	const ldapssl = ctx.settings.ldap.socket === "SSL" || ctx.settings.ldap.port === "636" ? "true" : "false";
 
 	ctx.set("Content-Type", "application/x-apple-aspen-config; charset=utf-8");
 	ctx.set("Content-Disposition", `attachment; filename="${filename}"`);
 
-	await ctx.render('mobileconfig.xml', Object.assign({}, settings, {
+	await ctx.render('mobileconfig.xml', Object.assign({}, ctx.settings, {
 		email,
 		username,
 		domain,
@@ -219,7 +218,7 @@ router.get("/email.mobileconfig", async (ctx) => {
 
 // Generic support page
 router.get("/", async (ctx) => {
-	await ctx.render('index.html', settings);
+	await ctx.render('index.html', ctx.settings);
 });
 
 router.get("/favicon.ico", async (ctx) => {
@@ -228,79 +227,89 @@ router.get("/favicon.ico", async (ctx) => {
 	await send(ctx, 'favicon.ico', { root: path.join(__dirname, 'views') });
 });
 
-app.use(views(path.join(__dirname, 'views'), {
-	map: { xml: 'nunjucks', html: 'nunjucks' }
-}));
+function createApp(settings) {
+	const app = new Koa();
+	app.context.settings = settings;
 
-app.use(async (ctx, next) => {
-	const incomingRequestId = ctx.get('x-request-id');
-	const requestId = incomingRequestId || buildRequestId();
-	ctx.state.requestId = requestId;
-	ctx.set('X-Request-Id', requestId);
-	await next();
-});
+	app.use(views(path.join(__dirname, 'views'), {
+		map: { xml: 'nunjucks', html: 'nunjucks' }
+	}));
 
-app.use(async (ctx, next) => {
-	try {
+	app.use(async (ctx, next) => {
+		const incomingRequestId = ctx.get('x-request-id');
+		const requestId = incomingRequestId || buildRequestId();
+		ctx.state.requestId = requestId;
+		ctx.set('X-Request-Id', requestId);
 		await next();
-	} catch (err) {
-		ctx.status = err.status || 500;
-		if (!ctx.body) {
-			ctx.body = 'Internal Server Error';
-		}
+	});
 
-		log('error', 'request_error', {
+	app.use(async (ctx, next) => {
+		try {
+			await next();
+		} catch (err) {
+			ctx.status = err.status || 500;
+			if (!ctx.body) {
+				ctx.body = 'Internal Server Error';
+			}
+
+			log('error', 'request_error', {
+				requestId: ctx.state.requestId,
+				method: ctx.method,
+				path: ctx.path,
+				status: ctx.status,
+				message: err.message
+			});
+
+			ctx.app.emit('error', err, ctx);
+		}
+	});
+
+	app.use(async (ctx, next) => {
+		const start = Date.now();
+		await next();
+
+		log('info', 'request', {
 			requestId: ctx.state.requestId,
 			method: ctx.method,
 			path: ctx.path,
 			status: ctx.status,
+			durationMs: Date.now() - start,
+			ip: ctx.ip
+		});
+	});
+
+	app.use(async (ctx, next) => {
+		// Normalize text/xml to application/xml for downstream parsers
+		const type = ctx.request.headers['content-type'];
+		if (type && type.indexOf('text/xml') === 0) {
+			ctx.request.headers['content-type'] = type.replace('text/xml', 'application/xml');
+		}
+		await next();
+	});
+
+	// parse XML bodies into ctx.request.body and keep raw body on ctx.request.rawBody
+	app.use(xmlBody);
+
+	// parse urlencoded/json bodies
+	app.use(bodyParser());
+
+	app.use(router.routes());
+	app.use(router.allowedMethods());
+
+	app.on('error', (err, ctx) => {
+		log('error', 'app_error', {
+			requestId: ctx && ctx.state ? ctx.state.requestId : undefined,
 			message: err.message
 		});
-
-		ctx.app.emit('error', err, ctx);
-	}
-});
-
-app.use(async (ctx, next) => {
-	const start = Date.now();
-	await next();
-
-	log('info', 'request', {
-		requestId: ctx.state.requestId,
-		method: ctx.method,
-		path: ctx.path,
-		status: ctx.status,
-		durationMs: Date.now() - start,
-		ip: ctx.ip
 	});
-});
 
-app.use(async (ctx, next) => {
-	// Normalize text/xml to application/xml for downstream parsers
-	const type = ctx.request.headers['content-type'];
-	if (type && type.indexOf('text/xml') === 0) {
-		ctx.request.headers['content-type'] = type.replace('text/xml', 'application/xml');
-	}
-	await next();
-});
+	return app;
+}
 
-// parse XML bodies into ctx.request.body and keep raw body on ctx.request.rawBody
-app.use(xmlBody);
+if (require.main === module) {
+	const port = process.env.PORT || 8000;
+	createApp(loadSettings(process.env)).listen(port);
+	log('info', 'server_started', { port });
+}
 
-// parse urlencoded/json bodies
-app.use(bodyParser());
-
-app.use(router.routes());
-app.use(router.allowedMethods());
-
-const port = process.env.PORT || 8000;
-app.listen(port);
-
-log('info', 'server_started', { port });
-
-app.on('error', (err, ctx) => {
-	log('error', 'app_error', {
-		requestId: ctx && ctx.state ? ctx.state.requestId : undefined,
-		message: err.message
-	});
-});
+module.exports = createApp;
