@@ -1,3 +1,5 @@
+"use strict";
+
 const SOCKET_TYPES = { ssl: 'SSL', starttls: 'STARTTLS', plain: 'plain' };
 
 // Clients compare socket types literally (Thunderbird drops a server announced as "ssl"
