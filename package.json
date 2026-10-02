@@ -4,6 +4,7 @@
   "description": "Provides IMAP/SMTP/LDAP Autodiscover capabilities on Microsoft Outlook/Apple Mail, Autoconfig capabilities for Thunderbird, and Configuration Profiles for iOS/Apple Mail.",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "test": "LOG_LEVEL=silent node --test \"test/**/*.test.js\"",
     "start": "node index.js"
   },
@@ -44,5 +45,10 @@
   },
   "overrides": {
     "qs": "^6.16.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "globals": "^17.13.0"
   }
 }
