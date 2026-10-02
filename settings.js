@@ -1,47 +1,48 @@
-module.exports = {
+module.exports = (env) => ({
 	info: {
- 		name: process.env.COMPANY_NAME || process.env.DOMAIN || 'Example',
- 		url: process.env.SUPPORT_URL || (process.env.DOMAIN ? `https://${process.env.DOMAIN}` : '')
+ 		name: env.COMPANY_NAME || env.DOMAIN || 'Example',
+ 		url: env.SUPPORT_URL || (env.DOMAIN ? `https://${env.DOMAIN}` : '')
 	},
-	domain: process.env.DOMAIN || 'example.com',
+	domain: env.DOMAIN || 'example.com',
 
-	// sensible defaults derived from domain when specific env vars are not provided
+	// sensible defaults derived from domain when specific env vars are not provided;
+	// an empty *_HOST disables that protocol
 	imap: {
-		host: process.env.IMAP_HOST || `imap.${process.env.DOMAIN || 'example.com'}`,
-		port: process.env.IMAP_PORT || '993',
-		socket: process.env.IMAP_SOCKET || 'SSL'
+		host: env.IMAP_HOST ?? `imap.${env.DOMAIN || 'example.com'}`,
+		port: env.IMAP_PORT || '993',
+		socket: env.IMAP_SOCKET || 'SSL'
 	},
 	pop: {
-		host: process.env.POP_HOST || `pop.${process.env.DOMAIN || 'example.com'}`,
-		port: process.env.POP_PORT || '995',
-		socket: process.env.POP_SOCKET || 'SSL'
+		host: env.POP_HOST ?? `pop.${env.DOMAIN || 'example.com'}`,
+		port: env.POP_PORT || '995',
+		socket: env.POP_SOCKET || 'SSL'
 	},
 	smtp: {
-		host: process.env.SMTP_HOST || `smtp.${process.env.DOMAIN || 'example.com'}`,
-		port: process.env.SMTP_PORT || '587',
-		socket: process.env.SMTP_SOCKET || 'STARTTLS'
+		host: env.SMTP_HOST ?? `smtp.${env.DOMAIN || 'example.com'}`,
+		port: env.SMTP_PORT || '587',
+		socket: env.SMTP_SOCKET || 'STARTTLS'
 	},
 	mobilesync: {
-		url: process.env.MOBILESYNC_URL,
-		name: process.env.MOBILESYNC_NAME
+		url: env.MOBILESYNC_URL,
+		name: env.MOBILESYNC_NAME
 	},
 	ldap: {
-		host: process.env.LDAP_HOST,
-		port: process.env.LDAP_PORT,
-		socket: process.env.LDAP_SOCKET,
-		base: process.env.LDAP_BASE,
-		userfield: process.env.LDAP_USER_FIELD,
-		usersbase: process.env.LDAP_USER_BASE,
-		searchfilter: process.env.LDAP_SEARCH
+		host: env.LDAP_HOST,
+		port: env.LDAP_PORT,
+		socket: env.LDAP_SOCKET,
+		base: env.LDAP_BASE,
+		userfield: env.LDAP_USER_FIELD,
+		usersbase: env.LDAP_USER_BASE,
+		searchfilter: env.LDAP_SEARCH
 	},
 	mobile: {
-		identifier: process.env.PROFILE_IDENTIFIER,
-		uuid: process.env.PROFILE_UUID,
+		identifier: env.PROFILE_IDENTIFIER,
+		uuid: env.PROFILE_UUID,
 		mail: {
-			uuid: process.env.MAIL_UUID,
+			uuid: env.MAIL_UUID,
 		},
 		ldap: {
-			uuid: process.env.LDAP_UUID,
+			uuid: env.LDAP_UUID,
 		}
 	}
-};
+});

@@ -4,7 +4,7 @@
   "description": "Provides IMAP/SMTP/LDAP Autodiscover capabilities on Microsoft Outlook/Apple Mail, Autoconfig capabilities for Thunderbird, and Configuration Profiles for iOS/Apple Mail.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "LOG_LEVEL=silent node --test \"test/**/*.test.js\"",
     "start": "node index.js"
   },
   "engines": {

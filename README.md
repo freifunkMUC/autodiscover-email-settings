@@ -43,6 +43,14 @@ Replace above variables with data according to this table
 
 ## Usage
 
+### Protocols
+
+`IMAP_HOST`, `POP_HOST` and `SMTP_HOST` default to `imap.`, `pop.` and `smtp.` followed by `DOMAIN`.
+To leave a protocol out of every generated configuration, set its host to an empty string, e.g. `POP_HOST=`.
+
+`MOBILESYNC_URL` is the full ActiveSync endpoint, e.g. `https://sync.example.com/Microsoft-Server-ActiveSync`.
+It is only returned to clients that ask Autodiscover for ActiveSync settings; `MOBILESYNC_NAME` defaults to the same URL.
+
 ### Logging
 
 The service emits JSON logs to stdout/stderr by default:
@@ -87,8 +95,7 @@ services:
       - SMTP_PORT=587
       - SMTP_SOCKET=STARTTLS
       # MobileSync/ActiveSync configuration (url mandatory to enable)
-      - MOBILESYNC_URL=https://sync.example.com
-      - MOBILESYNC_NAME=sync.example.com
+      - MOBILESYNC_URL=https://sync.example.com/Microsoft-Server-ActiveSync
       # LDAP configuration (host mandatory to enable)
       - LDAP_HOST=ldap.example.com
       - LDAP_PORT=636
@@ -133,8 +140,7 @@ services:
       - SMTP_PORT=587
       - SMTP_SOCKET=STARTTLS
       # MobileSync/ActiveSync configuration (url mandatory to enable)
-      - MOBILESYNC_URL=https://sync.example.com
-      - MOBILESYNC_NAME=sync.example.com
+      - MOBILESYNC_URL=https://sync.example.com/Microsoft-Server-ActiveSync
       # LDAP configuration (host mandatory to enable)
       - LDAP_HOST=ldap.example.com
       - LDAP_PORT=636
@@ -245,8 +251,7 @@ Environment="SMTP_PORT=465"
 Environment="SMTP_SOCKET=SSL"
 
 # MobileSync/ActiveSync configuration (url mandatory to enable)
-#Environment="MOBILESYNC_URL=https://sync.example.com"
-#Environment="MOBILESYNC_NAME=sync.example.com"
+#Environment="MOBILESYNC_URL=https://sync.example.com/Microsoft-Server-ActiveSync"
 
 # LDAP configuration (host mandatory to enable)
 #Environment="LDAP_HOST=ldap.example.com"
