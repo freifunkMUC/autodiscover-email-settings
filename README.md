@@ -50,6 +50,8 @@ To leave a protocol out of every generated configuration, set its host to an emp
 
 `MOBILESYNC_URL` is the full ActiveSync endpoint, e.g. `https://sync.example.com/Microsoft-Server-ActiveSync`.
 It is only returned to clients that ask Autodiscover for ActiveSync settings; `MOBILESYNC_NAME` defaults to the same URL.
+New Outlook for Windows only gets it from `autodiscover.json` with `MOBILESYNC_AUTODISCOVER_JSON=true`.
+Leave that off unless your ActiveSync server works with new Outlook: once it gets an ActiveSync URL, it does not fall back to IMAP.
 
 ### Logging
 

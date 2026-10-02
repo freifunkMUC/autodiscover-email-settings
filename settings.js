@@ -24,7 +24,8 @@ module.exports = (env) => ({
 	},
 	mobilesync: {
 		url: env.MOBILESYNC_URL,
-		name: env.MOBILESYNC_NAME
+		name: env.MOBILESYNC_NAME,
+		autodiscoverJson: env.MOBILESYNC_AUTODISCOVER_JSON === 'true'
 	},
 	ldap: {
 		host: env.LDAP_HOST,
