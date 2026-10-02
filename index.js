@@ -111,9 +111,10 @@ function parseAutodiscoverAddress(email, defaultDomain) {
 }
 
 async function renderOutlookSettings(ctx, address) {
-	const imapenc = ctx.settings.imap.socket === "STARTTLS" ? "TLS" : ctx.settings.imap.socket;
-	const popenc = ctx.settings.pop.socket === "STARTTLS" ? "TLS" : ctx.settings.pop.socket;
-	const smtpenc = ctx.settings.smtp.socket === "STARTTLS" ? "TLS" : ctx.settings.smtp.socket;
+	const encryption = (socket) => ({ SSL: "SSL", STARTTLS: "TLS" })[socket] || "None";
+	const imapenc = encryption(ctx.settings.imap.socket);
+	const popenc = encryption(ctx.settings.pop.socket);
+	const smtpenc = encryption(ctx.settings.smtp.socket);
 
 	// <Encryption> tells implicit TLS from STARTTLS. Clients that ignore it, Thunderbird
 	// among them, read <SSL>off</SSL> as plaintext, so SSL is on for either.

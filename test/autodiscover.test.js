@@ -103,3 +103,11 @@ test("autodiscover keeps SSL=on for STARTTLS so clients reading only <SSL> do no
 	assert.equal(smtp.SSL, "on");
 	assert.equal(smtp.Encryption, "TLS");
 });
+
+test("autodiscover announces a plain socket as Encryption=None", async () => {
+	const response = await autodiscover({ IMAP_PORT: "143", IMAP_SOCKET: "plain" }, requestBody("alice@example.org"));
+	const imap = protocols(response).find((p) => p.Type === "IMAP");
+
+	assert.equal(imap.SSL, "off");
+	assert.equal(imap.Encryption, "None");
+});
