@@ -111,3 +111,12 @@ test("autodiscover announces a plain socket as Encryption=None", async () => {
 	assert.equal(imap.SSL, "off");
 	assert.equal(imap.Encryption, "None");
 });
+
+test("autodiscover does not ask clients to log in with a Windows domain", async () => {
+	const response = await autodiscover({}, requestBody("alice@example.org"));
+
+	for (const protocol of protocols(response)) {
+		assert.equal(protocol.DomainRequired, "off");
+		assert.equal(protocol.DomainName, undefined);
+	}
+});

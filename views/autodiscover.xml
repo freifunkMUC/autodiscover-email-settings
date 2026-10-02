@@ -16,8 +16,7 @@
                                 <Server>{{imap.host}}</Server>
                                 <Port>{{imap.port}}</Port>
                                 <LoginName>{{email}}</LoginName>
-                                <DomainRequired>on</DomainRequired>
-                                <DomainName>{{domain}}</DomainName>
+                                <DomainRequired>off</DomainRequired>
                                 <SPA>off</SPA>
                                 <SSL>{{imapssl}}</SSL>
                                 <Encryption>{{imapenc}}</Encryption>
@@ -31,8 +30,7 @@
                                 <Server>{{pop.host}}</Server>
                                 <Port>{{pop.port}}</Port>
                                 <LoginName>{{email}}</LoginName>
-                                <DomainRequired>on</DomainRequired>
-                                <DomainName>{{domain}}</DomainName>
+                                <DomainRequired>off</DomainRequired>
                                 <SPA>off</SPA>
                                 <SSL>{{popssl}}</SSL>
                                 <Encryption>{{popenc}}</Encryption>
@@ -45,8 +43,7 @@
                                 <Server>{{smtp.host}}</Server>
                                 <Port>{{smtp.port}}</Port>
                                 <LoginName>{{email}}</LoginName>
-                                <DomainRequired>on</DomainRequired>
-                                <DomainName>{{domain}}</DomainName>
+                                <DomainRequired>off</DomainRequired>
                                 <SPA>off</SPA>
                                 <SSL>{{smtpssl}}</SSL>
                                 <Encryption>{{smtpenc}}</Encryption>
