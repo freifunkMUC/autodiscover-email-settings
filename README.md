@@ -19,7 +19,6 @@ It provides IMAP/POP/SMTP/LDAP Autodiscover capabilities on Microsoft Outlook/Ap
     imap                    IN      CNAME  {{$MX_DOMAIN}}.
     smtp                    IN      CNAME  {{$MX_DOMAIN}}.
     @                       IN      MX 10  {{$MX_DOMAIN}}.
-    @                       IN      TXT    "mailconf=https://autoconfig.{{$DOMAIN}}/mail/config-v1.1.xml"
     _imaps._tcp             IN      SRV    0 0 {{IMAP_PORT}} {{MX_DOMAIN}}.
     _pop3s._tcp             IN      SRV    0 0 {{POP_PORT}} {{MX_DOMAIN}}.
     _submission._tcp        IN      SRV    0 0 {{SMTP_PORT}} {{MX_DOMAIN}}.
@@ -299,6 +298,20 @@ Thanks to [@HLFH ](https://github.com/HLFH) for providing sample NGinx configura
 The above autoconfiguration methods assume the following:
 
 -   If username does not contain `@`, full email address will be generated based on domain settings
+
+### Several domains
+
+One instance can serve any number of mail domains that share the same mail servers.
+For each domain, point `autoconfig.<domain>`, `autodiscover.<domain>` and the `_autodiscover._tcp` SRV record at it,
+and include those names in the TLS certificate.
+Logins are always the address the user entered; `DOMAIN` only provides the defaults.
+
+### Outlook
+
+Outlook 2016 and later, Microsoft 365 and the new Outlook for Windows set up accounts through a Microsoft cloud service,
+which queries this service from Microsoft's servers.
+It needs to reach it over HTTPS with a publicly trusted certificate, and it caches results, so changes can take a while to show.
+[Microsoft's Remote Connectivity Analyzer](https://testconnectivity.microsoft.com/) shows what that service gets.
 
 ## Links
 
