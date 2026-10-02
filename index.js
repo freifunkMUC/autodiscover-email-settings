@@ -111,13 +111,17 @@ function parseAutodiscoverAddress(email, defaultDomain) {
 }
 
 async function renderOutlookSettings(ctx, address) {
-	const imapenc = ctx.settings.imap.socket === "STARTTLS" ? "TLS" : ctx.settings.imap.socket;
-	const popenc = ctx.settings.pop.socket === "STARTTLS" ? "TLS" : ctx.settings.pop.socket;
-	const smtpenc = ctx.settings.smtp.socket === "STARTTLS" ? "TLS" : ctx.settings.smtp.socket;
+	const encryption = (socket) => ({ SSL: "SSL", STARTTLS: "TLS" })[socket] || "None";
+	const imapenc = encryption(ctx.settings.imap.socket);
+	const popenc = encryption(ctx.settings.pop.socket);
+	const smtpenc = encryption(ctx.settings.smtp.socket);
 
-	const imapssl = ctx.settings.imap.socket === "SSL" ? "on" : "off";
-	const popssl = ctx.settings.pop.socket === "SSL" ? "on" : "off";
-	const smtpssl = ctx.settings.smtp.socket === "SSL" ? "on" : "off";
+	// <Encryption> tells implicit TLS from STARTTLS. Clients that ignore it, Thunderbird
+	// among them, read <SSL>off</SSL> as plaintext, so SSL is on for either.
+	const tls = (socket) => (socket === "SSL" || socket === "STARTTLS" ? "on" : "off");
+	const imapssl = tls(ctx.settings.imap.socket);
+	const popssl = tls(ctx.settings.pop.socket);
+	const smtpssl = tls(ctx.settings.smtp.socket);
 
 	await ctx.render('autodiscover.xml', Object.assign({}, ctx.settings, address, {
 		imapenc,
@@ -138,7 +142,10 @@ async function autodiscover(ctx) {
 	const schema = (readXmlText(body, ["Autodiscover", "Request", "AcceptableResponseSchema"]) ||
 		OUTLOOK_RESPONSE_SCHEMA).toLowerCase();
 
-	if (schema === OUTLOOK_RESPONSE_SCHEMA.toLowerCase()) {
+	// A GET from a browser (e.g. the support page link) still gets a preview.
+	if (ctx.method === "POST" && !address.email) {
+		await ctx.render('autodiscover-error.xml', { code: 600, message: "Invalid Request" });
+	} else if (schema === OUTLOOK_RESPONSE_SCHEMA.toLowerCase()) {
 		await renderOutlookSettings(ctx, address);
 	} else if (schema === MOBILESYNC_RESPONSE_SCHEMA.toLowerCase() && ctx.settings.mobilesync.url) {
 		await ctx.render('autodiscover-mobilesync.xml', Object.assign({}, ctx.settings, address));

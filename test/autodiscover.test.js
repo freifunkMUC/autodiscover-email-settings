@@ -81,3 +81,55 @@ test("autodiscover returns error 601 for a MobileSync request without MOBILESYNC
 	assert.equal(response.Error.ErrorCode, "601");
 	assert.equal(response.Account, undefined);
 });
+
+test("autodiscover sends SPA=off so clients use plain login instead of NTLM", async () => {
+	const response = await autodiscover({}, requestBody("alice@example.org"));
+
+	for (const protocol of protocols(response)) {
+		assert.equal(protocol.SPA, "off");
+	}
+});
+
+test("autodiscover names the protocols IMAP, POP3 and SMTP as MS-OXDSCLI defines them", async () => {
+	const response = await autodiscover({}, requestBody("alice@example.org"));
+
+	assert.deepEqual(protocols(response).map((p) => p.Type), ["IMAP", "POP3", "SMTP"]);
+});
+
+test("autodiscover keeps SSL=on for STARTTLS so clients reading only <SSL> do not fall back to plaintext", async () => {
+	const response = await autodiscover({ SMTP_PORT: "587", SMTP_SOCKET: "STARTTLS" }, requestBody("alice@example.org"));
+	const smtp = protocols(response).find((p) => p.Type === "SMTP");
+
+	assert.equal(smtp.SSL, "on");
+	assert.equal(smtp.Encryption, "TLS");
+});
+
+test("autodiscover announces a plain socket as Encryption=None", async () => {
+	const response = await autodiscover({ IMAP_PORT: "143", IMAP_SOCKET: "plain" }, requestBody("alice@example.org"));
+	const imap = protocols(response).find((p) => p.Type === "IMAP");
+
+	assert.equal(imap.SSL, "off");
+	assert.equal(imap.Encryption, "None");
+});
+
+test("autodiscover does not ask clients to log in with a Windows domain", async () => {
+	const response = await autodiscover({}, requestBody("alice@example.org"));
+
+	for (const protocol of protocols(response)) {
+		assert.equal(protocol.DomainRequired, "off");
+		assert.equal(protocol.DomainName, undefined);
+	}
+});
+
+test("autodiscover reports the user's address as DisplayName rather than COMPANY_NAME", async () => {
+	const response = await autodiscover({ COMPANY_NAME: "Example Inc." }, requestBody("alice@example.org"));
+
+	assert.equal(response.User.DisplayName, "alice@example.org");
+});
+
+test("autodiscover returns error 600 for a POST without an address", async () => {
+	const response = await autodiscover({}, requestBody(""));
+
+	assert.equal(response.Error.ErrorCode, "600");
+	assert.equal(response.Account, undefined);
+});

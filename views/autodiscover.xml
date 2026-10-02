@@ -4,7 +4,7 @@
         <Response
                 xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
                 <User>
-                        <DisplayName>{{info.name}}</DisplayName>
+                        <DisplayName>{{email}}</DisplayName>
                 </User>
                 <Account>
                         <AccountType>email</AccountType>
@@ -16,9 +16,8 @@
                                 <Server>{{imap.host}}</Server>
                                 <Port>{{imap.port}}</Port>
                                 <LoginName>{{email}}</LoginName>
-                                <DomainRequired>on</DomainRequired>
-                                <DomainName>{{domain}}</DomainName>
-                                <SPA>on</SPA>
+                                <DomainRequired>off</DomainRequired>
+                                <SPA>off</SPA>
                                 <SSL>{{imapssl}}</SSL>
                                 <Encryption>{{imapenc}}</Encryption>
                                 <AuthRequired>on</AuthRequired>
@@ -27,13 +26,12 @@
 
                         {%- if pop.host %}
                         <Protocol>
-                                <Type>POP</Type>
+                                <Type>POP3</Type>
                                 <Server>{{pop.host}}</Server>
                                 <Port>{{pop.port}}</Port>
                                 <LoginName>{{email}}</LoginName>
-                                <DomainRequired>on</DomainRequired>
-                                <DomainName>{{domain}}</DomainName>
-                                <SPA>on</SPA>
+                                <DomainRequired>off</DomainRequired>
+                                <SPA>off</SPA>
                                 <SSL>{{popssl}}</SSL>
                                 <Encryption>{{popenc}}</Encryption>
                                 <AuthRequired>on</AuthRequired>
@@ -45,9 +43,8 @@
                                 <Server>{{smtp.host}}</Server>
                                 <Port>{{smtp.port}}</Port>
                                 <LoginName>{{email}}</LoginName>
-                                <DomainRequired>on</DomainRequired>
-                                <DomainName>{{domain}}</DomainName>
-                                <SPA>on</SPA>
+                                <DomainRequired>off</DomainRequired>
+                                <SPA>off</SPA>
                                 <SSL>{{smtpssl}}</SSL>
                                 <Encryption>{{smtpenc}}</Encryption>
                                 <AuthRequired>on</AuthRequired>
