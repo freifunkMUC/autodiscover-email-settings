@@ -39,3 +39,13 @@ test("mobileconfig keeps an address's identifiers stable across downloads", asyn
 	assert.deepEqual(strings(second, "PayloadUUID"), strings(first, "PayloadUUID"));
 	assert.deepEqual(strings(second, "PayloadIdentifier"), strings(first, "PayloadIdentifier"));
 });
+
+test("mobileconfig produces complete identifiers from DOMAIN alone", async () => {
+	const plist = await mobileconfig({ DOMAIN: "example.com" }, "alice@example.com");
+	const identifiers = strings(plist, "PayloadIdentifier");
+
+	assert.match(identifiers.at(-1), /^com\.example\.autodiscover\.[0-9A-F-]{36}$/);
+	for (const uuid of strings(plist, "PayloadUUID")) {
+		assert.match(uuid, /^[0-9A-F]{8}-[0-9A-F]{4}-8[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/);
+	}
+});

@@ -51,6 +51,17 @@ To leave a protocol out of every generated configuration, set its host to an emp
 `MOBILESYNC_URL` is the full ActiveSync endpoint, e.g. `https://sync.example.com/Microsoft-Server-ActiveSync`.
 It is only returned to clients that ask Autodiscover for ActiveSync settings; `MOBILESYNC_NAME` defaults to the same URL.
 
+### Apple configuration profiles
+
+The support page offers a configuration profile for iOS and macOS at `/email.mobileconfig?email=<address>`.
+It works with `DOMAIN` alone; two optional settings control its identifiers:
+
+- `PROFILE_IDENTIFIER`: reverse-DNS prefix for the profile, default `com.example.autodiscover` for `DOMAIN=example.com`.
+- `PROFILE_UUID`: namespace from which each address's profile UUIDs are derived. Changing it makes devices treat new downloads as different profiles.
+
+Each address gets its own identifiers, so profiles for several accounts can be installed on one device.
+The profile is not signed, so devices show it as unverified.
+
 ### Logging
 
 The service emits JSON logs to stdout/stderr by default:
@@ -104,7 +115,7 @@ services:
       - LDAP_USER_FIELD=uid
       - LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com
       - LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))
-      # Apple mobile config identifiers (identifier mandatory to enable)
+      # Apple configuration profile identifiers (optional, derived from DOMAIN)
       - PROFILE_IDENTIFIER=com.example.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
     labels:
@@ -147,7 +158,7 @@ services:
       - LDAP_USER_FIELD=uid
       - LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com
       - LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))
-      # Apple mobile config identifiers (identifier mandatory to enable)
+      # Apple configuration profile identifiers (optional, derived from DOMAIN)
       - PROFILE_IDENTIFIER=com.example.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
     deploy:
@@ -258,7 +269,7 @@ Environment="SMTP_SOCKET=SSL"
 #Environment="LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com"
 #Environment="LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))"
 
-# Apple mobile config identifiers (identifier mandatory to enable)
+# Apple configuration profile identifiers (optional, derived from DOMAIN)
 Environment="PROFILE_IDENTIFIER=com.example.autodiscover"
 Environment="PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86"
 
