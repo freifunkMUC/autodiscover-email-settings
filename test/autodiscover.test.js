@@ -74,9 +74,17 @@ test("autodiscover answers a MobileSync request with the ActiveSync URL", async 
 	});
 });
 
-test("autodiscover returns error 601 for a MobileSync request without MOBILESYNC_URL", async () => {
+test("autodiscover answers a MobileSync request without MOBILESYNC_URL with a MobileSync error", async () => {
 	const body = requestBody("alice@example.org", MOBILESYNC_RESPONSE, MOBILESYNC_REQUEST);
 	const response = await autodiscover({}, body);
+
+	assert.equal(response.$.xmlns, MOBILESYNC_RESPONSE);
+	assert.equal(response.Action.Error.Status, "2");
+	assert.equal(response.Action.Settings, undefined);
+});
+
+test("autodiscover returns error 601 for a response schema it does not know", async () => {
+	const response = await autodiscover({}, requestBody("alice@example.org", "http://example.org/unknown"));
 
 	assert.equal(response.Error.ErrorCode, "601");
 	assert.equal(response.Account, undefined);
