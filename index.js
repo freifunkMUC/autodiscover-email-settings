@@ -294,6 +294,20 @@ router.get("/", async (ctx) => {
 	await ctx.render('index.html', Object.assign({}, ctx.settings, { profile: hasProfile(ctx.settings) }));
 });
 
+// Bootstrap for the support page, served from node_modules so that visitors do not
+// load it from a third-party CDN
+const BOOTSTRAP_DIST = path.join(path.dirname(require.resolve("bootstrap/package.json")), "dist");
+const ASSETS = {
+	"bootstrap.min.css": "css/bootstrap.min.css",
+	"bootstrap.min.js": "js/bootstrap.min.js"
+};
+
+router.get("/assets/:file", async (ctx) => {
+	if (Object.hasOwn(ASSETS, ctx.params.file)) {
+		await send(ctx, ASSETS[ctx.params.file], { root: BOOTSTRAP_DIST, maxage: 24 * 60 * 60 * 1000 });
+	}
+});
+
 router.get("/favicon.ico", async (ctx) => {
 	// Serve static favicon from views directory
 	ctx.type = 'image/x-icon';
