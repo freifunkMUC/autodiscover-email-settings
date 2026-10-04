@@ -1,51 +1,28 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: A mail client does not get the right settings, or the service misbehaves
 title: ''
 labels: bug
-assignees: madmath03
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**What happens**
+What the client or the service does, and what you expected instead.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Mail client**
+Client and version (e.g. Thunderbird 140, Outlook for Windows 2508, iOS 26 Mail), and how you set up the account.
 
-Provide Docker commands or docker-compose file if possible.
+**Request and response**
+The URL that was queried and what the service answered, for example:
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+```
+curl -s 'https://autoconfig.example.com/mail/config-v1.1.xml?emailaddress=alice@example.com'
+curl -s -X POST -H 'Content-Type: text/xml' --data '<Autodiscover><Request><EMailAddress>alice@example.com</EMailAddress></Request></Autodiscover>' https://autodiscover.example.com/autodiscover/autodiscover.xml
+```
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+For Outlook, the result of Microsoft's [Remote Connectivity Analyzer](https://testconnectivity.microsoft.com/) helps a lot.
 
-**Node (please complete the following information):**
-
--   Node / NPM Version: (e.g. Node version 12.16.1)
-
-**Docker (please complete the following information):**
-
--   Docker / Docker-compose Version: (e.g. Docker version 18.03.0-ce, build 0520e24)
--   Image (e.g. 7.0-apache)
-
-**Desktop (please complete the following information):**
-
--   OS: (e.g. iOS)
--   Browser (e.g. chrome, safari)
--   Version (e.g. 22)
-
-**Smartphone (please complete the following information):**
-
--   Device: (e.g. iPhone6)
--   OS: (e.g. iOS8.1)
--   Browser (e.g. stock browser, safari)
--   Version (e.g. 22)
-
-**Additional context**
-Add any other context about the problem here.
+**Setup**
+- Image tag or commit:
+- How it runs (Docker, Compose, systemd) and the reverse proxy in front of it:
+- The environment variables you set (replace anything private):
