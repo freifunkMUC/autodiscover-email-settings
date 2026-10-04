@@ -37,6 +37,7 @@
     "@koa/router": "^15.3.1",
     "@ladjs/consolidate": "^1.0.0",
     "@ladjs/koa-views": "^9.0.0",
+    "bootstrap": "^5.3.8",
     "koa": "^3.1.2",
     "koa-bodyparser": "^4.3.0",
     "nunjucks": "^3.2.4",

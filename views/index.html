@@ -13,9 +13,7 @@
     <link rel="shortcut icon" href="favicon.ico" />
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-        crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/bootstrap.min.css">
 
     <style>
         :root {
@@ -32,6 +30,19 @@
             position: relative;
 
             transition: background-color .1s ease-in-out, color .1s ease-in-out;
+        }
+
+        .jumbotron {
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            background-color: #e9ecef;
+            border-radius: .3rem;
+        }
+
+        @media (min-width: 576px) {
+            .jumbotron {
+                padding: 4rem 2rem;
+            }
         }
 
         body.dark {
@@ -234,37 +245,39 @@
     </script>
 </head>
 
-<body id="body" data-spy="scroll" data-target="#navbar-main" class="light">
+<body id="body" data-bs-spy="scroll" data-bs-target="#navbar-main" class="light">
     <nav id="navbar-main" class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand" href="#">{{info.name}}</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsDefault"
-            aria-controls="navbarsDefault" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">{{info.name}}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsDefault"
+                aria-controls="navbarsDefault" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <div class="collapse navbar-collapse" id="navbarsDefault">
-            <ul class="navbar-nav mr-autonav-tabs mr-auto" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link" href="#automatic">Automatic</a>
-                </li>
-                {% if profile %}<li class="nav-item">
-                    <a class="nav-link" href="#mobileconfig">iOS</a>
-                </li>{% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="#manualconfig">Manual configuration</a>
-                </li>
-            </ul>
+            <div class="collapse navbar-collapse" id="navbarsDefault">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#automatic">Automatic</a>
+                    </li>
+                    {% if profile %}<li class="nav-item">
+                        <a class="nav-link" href="#mobileconfig">iOS</a>
+                    </li>{% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#manualconfig">Manual configuration</a>
+                    </li>
+                </ul>
 
-            <div class="mt-2 mt-md-0 align-items-center">
-                <a class="text-muted" href="#" onclick="switchTheme();">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="theme-switch" width="30" height="30"
-                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="mx-3" role="img"
-                        viewBox="0 0 24 24" focusable="false">
-                        <title>Switch theme</title>
-                        <circle cx="12.5" cy="12.5" r="10"></circle>
-                        <circle cx="5" cy="12.5" r="10" class="shadow"></circle>
-                    </svg>
-                </a>
+                <div class="mt-2 mt-md-0 align-items-center">
+                    <a class="text-muted" href="#" onclick="switchTheme();">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="theme-switch" width="30" height="30"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="mx-3" role="img"
+                            viewBox="0 0 24 24" focusable="false">
+                            <title>Switch theme</title>
+                            <circle cx="12.5" cy="12.5" r="10"></circle>
+                            <circle cx="5" cy="12.5" r="10" class="shadow"></circle>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
@@ -284,7 +297,7 @@
         </div>
 
         <div class="container">
-            <h3 id="automatic" class="h3 font-weight-normal">Automatic settings</h3>
+            <h3 id="automatic" class="h3 fw-normal">Automatic settings</h3>
 
             <div class="mb-5">
                 <p>Thanks to the <a href="/mail/config-v1.1.xml">autoconfig</a> and
@@ -307,7 +320,7 @@
 
         {%- if profile %}
         <div class="container">
-            <h3 id="mobileconfig" class="h3 font-weight-normal">Apple Configuration Profile</h3>
+            <h3 id="mobileconfig" class="h3 fw-normal">Apple Configuration Profile</h3>
 
             <div class="mb-5">
                 <p>Enter your username or full email address and click the download button to setup your Apple mobile
@@ -321,7 +334,7 @@
                         <label for="inputId">Username or email</label>
                     </div>
 
-                    <button class="btn btn-lg btn-primary btn-block" type="submit">Download</button>
+                    <button class="btn btn-lg btn-primary w-100" type="submit">Download</button>
                 </form>
             </div>
 
@@ -331,7 +344,7 @@
         {% endif -%}
 
         <div class="container">
-            <h3 id="manualconfig" class="h3 font-weight-normal">Manual configuration</h3>
+            <h3 id="manualconfig" class="h3 fw-normal">Manual configuration</h3>
 
             <div class="mb-5">
                 <p>Copy the following settings to your email application.</p>
@@ -489,15 +502,7 @@
     </footer>
 
     <!-- Bootstrap core JavaScript ================================================== -->
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
+    <script src="assets/bootstrap.min.js"></script>
 
     <!-- Custom JavaScript ================================================== -->
     <script>
