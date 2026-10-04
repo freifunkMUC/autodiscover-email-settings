@@ -84,8 +84,6 @@ Though not the preferred solution, it is also possible to run the project withou
 ### docker
 
 ```yaml
-version: '2'
-
 services:
   autodiscover-example-com:
     image: ghcr.io/freifunkmuc/autodiscover-email-settings:latest
@@ -127,8 +125,6 @@ services:
 ### docker swarm
 
 ```yaml
-version: '3'
-
 services:
   autodiscover-example-com:
     image: ghcr.io/freifunkmuc/autodiscover-email-settings:latest
