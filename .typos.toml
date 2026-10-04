@@ -1,0 +1,8 @@
+[files]
+# also check .github/ and the dotfiles
+ignore-hidden = false
+extend-exclude = [".git/", "package-lock.json"]
+
+[default.extend-words]
+# the "MUC" of freifunkMUC is the airport code of Munich
+MUC = "MUC"
