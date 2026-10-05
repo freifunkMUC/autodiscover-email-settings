@@ -9,7 +9,7 @@ const xml2js = require("xml2js");
 const Router = require("@koa/router");
 const router = new Router();
 const loadSettings = require("./settings.js");
-const send = require('koa-send');
+const { send } = require("@koa/send");
 
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLowerCase();
 const LOG_ENABLED = LOG_LEVEL !== 'silent' && LOG_LEVEL !== 'none';
