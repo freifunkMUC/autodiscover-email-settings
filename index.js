@@ -3,14 +3,13 @@
 const path = require("path");
 const crypto = require("crypto");
 const Koa = require("koa");
-const views = require("@ladjs/koa-views");
+const nunjucks = require("nunjucks");
 const { getRawBody } = require("raw-body");
 const xml2js = require("xml2js");
-const bodyParser = require("koa-bodyparser");
 const Router = require("@koa/router");
 const router = new Router();
 const loadSettings = require("./settings.js");
-const send = require('koa-send');
+const { send } = require("@koa/send");
 
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLowerCase();
 const LOG_ENABLED = LOG_LEVEL !== 'silent' && LOG_LEVEL !== 'none';
@@ -314,13 +313,19 @@ router.get("/favicon.ico", async (ctx) => {
 	await send(ctx, 'favicon.ico', { root: path.join(__dirname, 'views') });
 });
 
+// Autoescaping keeps request values, such as the address, from adding markup.
+const templates = new nunjucks.Environment(
+	new nunjucks.FileSystemLoader(path.join(__dirname, "views")), { autoescape: true });
+
 function createApp(settings) {
 	const app = new Koa();
 	app.context.settings = settings;
 
-	app.use(views(path.join(__dirname, 'views'), {
-		map: { xml: 'nunjucks', html: 'nunjucks' }
-	}));
+	// Handlers set ctx.type themselves where the response is not HTML.
+	app.context.render = function (view, locals) {
+		this.type = "text/html";
+		this.body = templates.render(view, Object.assign({}, this.state, locals));
+	};
 
 	app.use(async (ctx, next) => {
 		const incomingRequestId = ctx.get('x-request-id');
@@ -365,20 +370,8 @@ function createApp(settings) {
 		});
 	});
 
-	app.use(async (ctx, next) => {
-		// Normalize text/xml to application/xml for downstream parsers
-		const type = ctx.request.headers['content-type'];
-		if (type && type.indexOf('text/xml') === 0) {
-			ctx.request.headers['content-type'] = type.replace('text/xml', 'application/xml');
-		}
-		await next();
-	});
-
 	// parse XML bodies into ctx.request.body and keep raw body on ctx.request.rawBody
 	app.use(xmlBody);
-
-	// parse urlencoded/json bodies
-	app.use(bodyParser());
 
 	app.use(router.routes());
 	app.use(router.allowedMethods());
