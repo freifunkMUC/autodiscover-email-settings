@@ -5,7 +5,7 @@ This service does that for your mail domains: it answers the configuration reque
 
 It does not touch your mail server. It only describes it, from a handful of environment variables.
 
-![The support page](screenshot_01.png)
+![The support page](screenshots/support-page.png)
 
 ## What it answers
 
