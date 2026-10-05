@@ -6,7 +6,6 @@ const Koa = require("koa");
 const views = require("@ladjs/koa-views");
 const { getRawBody } = require("raw-body");
 const xml2js = require("xml2js");
-const bodyParser = require("koa-bodyparser");
 const Router = require("@koa/router");
 const router = new Router();
 const loadSettings = require("./settings.js");
@@ -365,20 +364,8 @@ function createApp(settings) {
 		});
 	});
 
-	app.use(async (ctx, next) => {
-		// Normalize text/xml to application/xml for downstream parsers
-		const type = ctx.request.headers['content-type'];
-		if (type && type.indexOf('text/xml') === 0) {
-			ctx.request.headers['content-type'] = type.replace('text/xml', 'application/xml');
-		}
-		await next();
-	});
-
 	// parse XML bodies into ctx.request.body and keep raw body on ctx.request.rawBody
 	app.use(xmlBody);
-
-	// parse urlencoded/json bodies
-	app.use(bodyParser());
 
 	app.use(router.routes());
 	app.use(router.allowedMethods());
