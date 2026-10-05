@@ -1,0 +1,73 @@
+site_name: Autodiscover Email Settings
+strict: true
+repo_name: freifunkMUC/autodiscover-email-settings
+repo_url: https://github.com/freifunkMUC/autodiscover-email-settings
+site_url: https://www.freie-netze.org/autodiscover-email-settings/
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  icon:
+    logo: material/email-sync-outline
+  features:
+    - content.code.copy
+    - navigation.sections
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: light blue
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+markdown_extensions:
+  - admonition
+  - def_list
+  - tables
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  # pulls docker-compose.yml into the docs, so the copy people take is the one CI checks
+  - markdown_include.include:
+      base_path: docs
+  - toc:
+      permalink: " ¶"
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Configuration: configuration.md
+  - DNS and certificates: dns.md
+  - Deployment:
+      - Docker Compose: deployment/docker-compose.md
+      - Reverse proxy: deployment/reverse-proxy.md
+      - systemd: deployment/systemd.md
+  - Mail clients:
+      - Thunderbird: clients/thunderbird.md
+      - Outlook: clients/outlook.md
+      - Apple devices: clients/apple.md
+      - ActiveSync: clients/activesync.md
+  - Troubleshooting: troubleshooting.md
+  - About: about.md
+
+# a version selector; see scripts/docs/deploy.sh
+extra:
+  version:
+    provider: mike
+    default: latest
