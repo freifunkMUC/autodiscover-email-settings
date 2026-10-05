@@ -3,7 +3,7 @@
 const path = require("path");
 const crypto = require("crypto");
 const Koa = require("koa");
-const views = require("@ladjs/koa-views");
+const nunjucks = require("nunjucks");
 const { getRawBody } = require("raw-body");
 const xml2js = require("xml2js");
 const Router = require("@koa/router");
@@ -313,13 +313,19 @@ router.get("/favicon.ico", async (ctx) => {
 	await send(ctx, 'favicon.ico', { root: path.join(__dirname, 'views') });
 });
 
+// Autoescaping keeps request values, such as the address, from adding markup.
+const templates = new nunjucks.Environment(
+	new nunjucks.FileSystemLoader(path.join(__dirname, "views")), { autoescape: true });
+
 function createApp(settings) {
 	const app = new Koa();
 	app.context.settings = settings;
 
-	app.use(views(path.join(__dirname, 'views'), {
-		map: { xml: 'nunjucks', html: 'nunjucks' }
-	}));
+	// Handlers set ctx.type themselves where the response is not HTML.
+	app.context.render = function (view, locals) {
+		this.type = "text/html";
+		this.body = templates.render(view, Object.assign({}, this.state, locals));
+	};
 
 	app.use(async (ctx, next) => {
 		const incomingRequestId = ctx.get('x-request-id');
