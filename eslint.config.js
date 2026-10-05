@@ -18,5 +18,9 @@ module.exports = [
 			"prefer-const": "error",
 			strict: ["error", "global"]
 		}
+	},
+	{
+		files: ["**/*.mjs"],
+		languageOptions: { sourceType: "module" }
 	}
 ];

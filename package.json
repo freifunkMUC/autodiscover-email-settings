@@ -7,7 +7,8 @@
   "scripts": {
     "lint": "eslint .",
     "test": "LOG_LEVEL=silent node --test \"test/**/*.test.js\"",
-    "start": "node index.js"
+    "start": "node index.js",
+    "screenshots": "node scripts/screenshots.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -50,6 +51,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.11.0",
-    "globals": "^17.13.0"
+    "globals": "^17.13.0",
+    "playwright": "^1.63.0"
   }
 }
