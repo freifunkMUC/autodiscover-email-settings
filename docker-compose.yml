@@ -1,30 +1,29 @@
+# Put a reverse proxy in front that terminates HTTPS for autoconfig.example.com
+# and autodiscover.example.com. Every setting is explained in the documentation:
+# https://www.freie-netze.org/autodiscover-email-settings/latest/configuration/
 services:
-  autodiscover-example-com:
-    # For production, download prebuilt image
-    #image: ghcr.io/freifunkmuc/autodiscover-email-settings:latest
-    # For development or CI, build from local Dockerfile
-    build: ./
-    container_name: autodiscover
+  autodiscover:
+    image: ghcr.io/freifunkmuc/autodiscover-email-settings:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
-      - COMPANY_NAME=Company
-      - SUPPORT_URL=https://autodiscover.example.com
-      - DOMAIN=example.com
-      - IMAP_HOST=imap.example.com
-      - IMAP_PORT=993
-      - IMAP_SOCKET=SSL
-      - SMTP_HOST=smtp.example.com
-      - SMTP_PORT=587
-      - SMTP_SOCKET=STARTTLS
-      - MOBILESYNC_URL=https://sync.example.com/Microsoft-Server-ActiveSync
-      - LDAP_HOST=ldap.example.com
-      - LDAP_PORT=636
-      - LDAP_SOCKET=SSL
-      - LDAP_BASE=dc=ldap,dc=example,dc=com
-      - LDAP_USER_FIELD=uid
-      - LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com
-      - LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))
-      - PROFILE_IDENTIFIER=com.example.autodiscover
-      - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
-    labels:
-      - "traefik.port=8000"
-      - "traefik.frontend.rule=Host:autoconfig.example.com,autodiscover.example.com"
+      DOMAIN: example.com
+      COMPANY_NAME: Example
+      # the mail servers; an empty host leaves that protocol out
+      IMAP_HOST: mail.example.com
+      IMAP_PORT: "993"
+      IMAP_SOCKET: SSL
+      POP_HOST: ""
+      SMTP_HOST: mail.example.com
+      SMTP_PORT: "587"
+      SMTP_SOCKET: STARTTLS
+      # optional
+      # MOBILESYNC_URL: https://sync.example.com/Microsoft-Server-ActiveSync
+      # LDAP_HOST: ldap.example.com
+      # LDAP_PORT: "636"
+      # LDAP_SOCKET: SSL
+      # LDAP_BASE: dc=example,dc=com
+      # LDAP_USER_FIELD: uid
+      # LDAP_USER_BASE: ou=People,dc=example,dc=com
+      # LDAP_SEARCH: (objectClass=inetOrgPerson)
