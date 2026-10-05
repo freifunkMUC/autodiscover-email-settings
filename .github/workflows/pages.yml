@@ -1,0 +1,58 @@
+name: Publish docs via GitHub Pages
+
+# One version of the docs per minor release, published with mike (see
+# scripts/docs/deploy.sh): master as "dev", a release tag as its minor
+# version, and the newest release as "latest", which visitors see first.
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# every run pushes to gh-pages
+concurrency:
+  group: docs
+  cancel-in-progress: false
+
+jobs:
+  mkdocs:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # the release tags, and gh-pages to add to
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install documentation dependencies
+        run: pip install -r requirements-docs.txt
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # absent before the first deployment
+          git fetch origin gh-pages:gh-pages || true
+
+      - name: Deploy docs
+        env:
+          DOCS_PUSH: "1"
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          if [ "$REF_TYPE" = "tag" ]; then
+            scripts/docs/deploy.sh release "$REF_NAME"
+          else
+            scripts/docs/deploy.sh dev
+          fi
