@@ -1,5 +1,9 @@
 FROM node:26.10.0-alpine
 
+# The base only carries ca-certificates-bundle, which still holds the eMudhra and
+# Comodo AAA roots Mozilla removed; the ca-certificates package regenerates the store.
+RUN apk add --no-cache ca-certificates
+
 ENV NODE_ENV=production
 
 EXPOSE 8000
