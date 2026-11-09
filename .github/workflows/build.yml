@@ -67,6 +67,12 @@ jobs:
           AUTHOR=$(curl -sSL "${{ github.event.repository.owner.url }}" | jq -r '.name')
           echo "AUTHOR=$AUTHOR" >> "$GITHUB_ENV"
 
+      # the base image, for the labels below: the daily rebuild compares it
+      # with the Dockerfile
+      - name: Base image
+        id: base
+        run: .github/base-image.sh >> "$GITHUB_OUTPUT"
+
       # master -> :master, v2.1.0 -> :2.1.0, :2.1, :2 and :latest
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -82,6 +88,8 @@ jobs:
           labels: |
             org.opencontainers.image.authors=${{ env.AUTHOR }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.base.name=${{ steps.base.outputs.base_name }}
+            org.opencontainers.image.base.digest=${{ steps.base.outputs.base_digest }}
 
       # for the checks below; the multi-platform build cannot be loaded into
       # the local docker, and its layers come from this build's cache
@@ -100,24 +108,11 @@ jobs:
             VERSION=${{ github.head_ref || github.ref_name }}
             COMMIT=${{ github.sha }}
 
-      # The unit tests run the code from the checkout; this runs the image, so
-      # it also catches what only goes wrong there, e.g. a file the Dockerfile
-      # does not copy or a dependency left out by `npm ci --omit=dev`.
+      # The unit tests run the code from the checkout; this runs the image.
       - name: Smoke-test the image
         env:
           IMAGE: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
-        run: |
-          docker run -d --name smoke -p 8000:8000 -e DOMAIN=example.com "$IMAGE"
-          trap 'docker logs smoke; docker rm -f smoke >/dev/null' EXIT
-          for _ in $(seq 30); do curl -sf http://localhost:8000/ >/dev/null && break; sleep 1; done
-
-          curl -sf http://localhost:8000/mail/config-v1.1.xml | grep -q '<hostname>imap.example.com</hostname>'
-          curl -sf -X POST -H 'Content-Type: text/xml' \
-            --data '<Autodiscover><Request><EMailAddress>alice@example.com</EMailAddress></Request></Autodiscover>' \
-            http://localhost:8000/autodiscover/autodiscover.xml \
-            | grep -q '<LoginName>alice@example.com</LoginName>'
-          curl -sf 'http://localhost:8000/email.mobileconfig?email=alice@example.com' | grep -q 'com.apple.mail.managed'
-          curl -sf 'http://localhost:8000/autodiscover/autodiscover.json?Protocol=AutodiscoverV1' | grep -q '"AutodiscoverV1"'
+        run: .github/smoke.sh "$IMAGE"
 
       # before anything is published: the Alpine packages and the npm
       # dependencies in the image. Only what already has a fix fails the

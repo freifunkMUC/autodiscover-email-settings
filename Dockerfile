@@ -1,4 +1,4 @@
-FROM node:26.13.0-alpine
+FROM node:26.13.0-alpine@sha256:8996bb5821d62a8fd9bb27c1cb07462f3fdce6e47d640c6a881ead0b064ce216
 
 # The base only carries ca-certificates-bundle, which still holds the eMudhra and
 # Comodo AAA roots Mozilla removed; the ca-certificates package regenerates the store.
