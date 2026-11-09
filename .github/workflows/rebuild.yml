@@ -39,6 +39,11 @@ jobs:
     name: rebuild (${{ matrix.target }})
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    # The groups of build.yml's publishes of master and of release tags: they
+    # queue behind each other.
+    concurrency:
+      group: ${{ matrix.target == 'release' && 'publish-releases' || 'publish-refs/heads/master' }}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
       matrix:
@@ -62,7 +67,9 @@ jobs:
           TARGET: ${{ matrix.target }}
         run: |
           if [ "$TARGET" = release ]; then
-            ref=$(git -C ci tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+            # a git error fails the step; only "no matching tag" is allowed
+            tags=$(git -C ci tag --list 'v*' --sort=-v:refname)
+            ref=$(grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' <<< "$tags" | head -n1 || true)
             if [ -z "$ref" ]; then
               echo "No release tag" >&2
               echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -111,7 +118,7 @@ jobs:
       - name: Retrieve author data
         if: steps.decide.outputs.push == 'true'
         run: |
-          AUTHOR=$(curl -sSL "https://api.github.com/users/${{ github.repository_owner }}" | jq -r '.name')
+          AUTHOR=$(curl -fsSL "https://api.github.com/users/${{ github.repository_owner }}" | jq -r '.name')
           echo "AUTHOR=$AUTHOR" >> "$GITHUB_ENV"
 
       - name: Set up QEMU
@@ -166,6 +173,20 @@ jobs:
             echo "current=false" >> "$GITHUB_OUTPUT"
           else
             echo "current=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # A release published while this run builds must not lose "latest" to
+      # an older one: fail rather than push.
+      - name: Still the latest release
+        if: steps.head.outputs.current == 'true' && matrix.target == 'release'
+        env:
+          VERSION: ${{ steps.src.outputs.version }}
+        run: |
+          remote=$(git -C src ls-remote --tags --refs origin 'refs/tags/v*')
+          latest=$(grep -oE '[^/]+$' <<< "$remote" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1 || true)
+          if [ "$latest" != "v$VERSION" ]; then
+            echo "Latest release is now ${latest:-unknown}, not v$VERSION" >&2
+            exit 1
           fi
 
       # The first unused <version>-rN, found by asking the registry. Only a

@@ -43,6 +43,12 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    # Shared with rebuild.yml: two publishes of one ref must not overtake each
+    # other. Release tags share the group of the release rebuild; pull
+    # requests get a group of their own.
+    concurrency:
+      group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.run_id) || (startsWith(github.ref, 'refs/tags/') && 'publish-releases' || format('publish-{0}', github.ref)) }}
+      cancel-in-progress: false
     permissions:
       contents: read
       # to push the image
@@ -64,7 +70,7 @@ jobs:
       - name: Retrieve author data
         id: author
         run: |
-          AUTHOR=$(curl -sSL "${{ github.event.repository.owner.url }}" | jq -r '.name')
+          AUTHOR=$(curl -fsSL "${{ github.event.repository.owner.url }}" | jq -r '.name')
           echo "AUTHOR=$AUTHOR" >> "$GITHUB_ENV"
 
       # the base image, for the labels below: the daily rebuild compares it

@@ -6,7 +6,9 @@
 # The build and the daily rebuild put them into the image labels.
 #   base-image.sh [--pin] [Dockerfile]
 # --pin first adds the current digest to every FROM that has none (the daily
-# rebuild of an older release, whose Dockerfile was not pinned yet).
+# rebuild of an older release, whose Dockerfile was not pinned yet). Only
+# plain registry references are handled: a FROM that names an earlier stage or
+# takes an ARG is not resolved, and the build then fails instead of going on.
 set -euo pipefail
 
 pin=false

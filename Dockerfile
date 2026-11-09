@@ -2,7 +2,9 @@ FROM node:26.13.0-alpine@sha256:8996bb5821d62a8fd9bb27c1cb07462f3fdce6e47d640c6a
 
 # The base only carries ca-certificates-bundle, which still holds the eMudhra and
 # Comodo AAA roots Mozilla removed; the ca-certificates package regenerates the store.
-RUN apk add --no-cache ca-certificates
+# The upgrade brings in fixes the base image does not have yet; the daily rebuild
+# republishes only while the published image still has upgrades pending.
+RUN apk upgrade --no-cache && apk add --no-cache ca-certificates
 
 ENV NODE_ENV=production
 
