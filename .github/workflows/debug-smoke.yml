@@ -40,5 +40,10 @@ jobs:
           tags: rebuild:test
       - name: smoke
         run: |
-          bash -x ci/.github/smoke.sh rebuild:test 2>&1 | tail -40
-          echo "rc=${PIPESTATUS[0]}"
+          git -C src status --short; git -C src diff | head -20
+          docker images | head; 
+          docker run -d --name smoke -p 8000:8000 -e DOMAIN=example.com rebuild:test
+          sleep 4
+          docker ps -a; docker logs smoke; docker inspect smoke --format '{{.State.Status}} {{.State.ExitCode}} {{.State.OOMKilled}} {{.Image}}'
+          docker exec smoke ps 2>&1 | head; docker inspect rebuild:test --format '{{.Id}} {{.Architecture}} {{.Os}}'
+          docker run --rm --entrypoint node rebuild:test -e 'console.log(process.version, process.arch)'
