@@ -1,0 +1,36 @@
+name: Debug smoke
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  s:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: ci
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: src
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          platforms: all
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          buildkitd-config: ci/.github/buildkitd.toml
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: src
+          platforms: linux/amd64
+          push: false
+          load: true
+          no-cache: true
+          tags: rebuild:test
+      - name: smoke
+        run: |
+          docker run -d --name smoke -p 8000:8000 -e DOMAIN=example.com rebuild:test
+          sleep 5
+          docker ps -a; docker logs smoke; docker inspect smoke --format '{{.State.Status}} {{.State.ExitCode}} {{.State.Error}}'
+          curl -sv http://localhost:8000/ 2>&1 | head -15 || true
+          bash -x ci/.github/smoke.sh rebuild:test 2>&1 | tail -30 || true
