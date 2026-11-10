@@ -29,8 +29,5 @@ jobs:
           tags: rebuild:test
       - name: smoke
         run: |
-          docker run -d --name smoke -p 8000:8000 -e DOMAIN=example.com rebuild:test
-          sleep 5
-          docker ps -a; docker logs smoke; docker inspect smoke --format '{{.State.Status}} {{.State.ExitCode}} {{.State.Error}}'
-          curl -sv http://localhost:8000/ 2>&1 | head -15 || true
-          bash -x ci/.github/smoke.sh rebuild:test 2>&1 | tail -30 || true
+          bash -x ci/.github/smoke.sh rebuild:test 2>&1 | tail -40
+          echo "rc=${PIPESTATUS[0]}"
