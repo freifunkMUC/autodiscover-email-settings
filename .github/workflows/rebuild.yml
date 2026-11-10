@@ -52,6 +52,8 @@ jobs:
       contents: read
       # to pull and push the image
       packages: write
+      id-token: write
+      attestations: write
     steps:
       # The scripts come from master, the source from master or the release
       # tag (older tags do not have the scripts).
@@ -242,6 +244,7 @@ jobs:
             org.opencontainers.image.base.digest=${{ steps.base.outputs.base_digest }}
 
       - name: Build and push every published platform
+        id: push
         if: steps.head.outputs.current == 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -251,3 +254,19 @@ jobs:
           no-cache: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+
+      - name: Image name
+        id: image
+        if: steps.head.outputs.current == 'true'
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: echo "name=${IMAGE,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Attest build provenance
+        if: steps.head.outputs.current == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.image.outputs.name }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
